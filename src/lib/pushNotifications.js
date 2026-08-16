@@ -1,6 +1,5 @@
 import { supabase } from './supabase'
-
-const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY
+import { ENV } from './constants'
 
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
@@ -23,6 +22,10 @@ export async function subscribeToPush(userId) {
     throw new Error('Push notifications are not supported in this browser.')
   }
 
+  if (!ENV.push.vapidPublicKey) {
+    throw new Error('VITE_VAPID_PUBLIC_KEY is missing. Configure it to enable real push notifications.')
+  }
+
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') {
     throw new Error('Notification permission was not granted.')
@@ -31,7 +34,7 @@ export async function subscribeToPush(userId) {
   const registration = await navigator.serviceWorker.ready
   const subscription = await registration.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    applicationServerKey: urlBase64ToUint8Array(ENV.push.vapidPublicKey),
   })
 
   const { error } = await supabase

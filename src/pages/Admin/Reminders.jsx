@@ -3,20 +3,12 @@ import { ArrowLeft, Plus, X, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useReminders } from '../../hooks/useReminders'
 import ReminderCard from '../../components/ReminderCard'
-
-const ALL_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-const CONDITIONS = [
-  { value: '', label: 'Always' },
-  { value: 'gym', label: 'Gym days' },
-  { value: 'football', label: 'Football days' },
-  { value: 'gymfootball', label: 'Gym + football days' },
-  { value: 'rest', label: 'Rest days' },
-]
+import { WEEKDAYS, REMINDER_CONDITIONS } from '../../lib/constants'
 
 const EMPTY_FORM = {
   label: '',
   time_of_day: '07:00',
-  days: [...ALL_DAYS],
+  days: [...WEEKDAYS],
   only_on: '',
   message: '',
   is_active: true,
@@ -152,7 +144,7 @@ function ReminderFormModal({ initial, onClose, onSave, onDelete }) {
             Days
           </label>
           <div className="flex flex-wrap gap-2">
-            {ALL_DAYS.map((day) => (
+            {WEEKDAYS.map((day) => (
               <button
                 key={day}
                 type="button"
@@ -176,7 +168,7 @@ function ReminderFormModal({ initial, onClose, onSave, onDelete }) {
             onChange={(e) => setForm((f) => ({ ...f, only_on: e.target.value }))}
             className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
           >
-            {CONDITIONS.map((c) => (
+            {REMINDER_CONDITIONS.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
               </option>

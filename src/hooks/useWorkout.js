@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from './useAuth'
-import { todayISO } from '../lib/dayTypes'
-
-const ACTIVE_PROGRAMME_KEY = 'forge_active_programme_id'
+import { todayISO } from '../lib/date'
+import { STORAGE_KEYS } from '../lib/constants'
 
 function parseTargetSets(targetSets) {
   const n = parseInt(targetSets, 10)
@@ -20,7 +19,7 @@ export function useWorkout() {
 
   const [programmes, setProgrammes] = useState([])
   const [programmeId, setProgrammeId] = useState(
-    () => localStorage.getItem(ACTIVE_PROGRAMME_KEY) || null,
+    () => localStorage.getItem(STORAGE_KEYS.activeProgrammeId) || null,
   )
   const [sessions, setSessions] = useState([])
   const [sessionId, setSessionId] = useState(null)
@@ -45,7 +44,7 @@ export function useWorkout() {
   // Load sessions when programme changes
   useEffect(() => {
     if (!programmeId) return
-    localStorage.setItem(ACTIVE_PROGRAMME_KEY, programmeId)
+    localStorage.setItem(STORAGE_KEYS.activeProgrammeId, programmeId)
     supabase
       .from('programme_sessions')
       .select('*')

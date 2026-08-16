@@ -3,9 +3,7 @@ import { ChevronDown, ChevronUp, Plus, Play } from 'lucide-react'
 import { useWorkout } from '../hooks/useWorkout'
 import SetRow from '../components/SetRow'
 import RestTimer from '../components/RestTimer'
-
-const REST_DURATION_KEY = 'forge_rest_duration_sec'
-const REST_OPTIONS = [60, 90, 120, 180]
+import { STORAGE_KEYS, REST_DURATION_OPTIONS } from '../lib/constants'
 
 export default function Workout() {
   const {
@@ -31,7 +29,7 @@ export default function Workout() {
 
   const [expanded, setExpanded] = useState(() => new Set())
   const [restDuration, setRestDuration] = useState(
-    () => Number(localStorage.getItem(REST_DURATION_KEY)) || 90,
+    () => Number(localStorage.getItem(STORAGE_KEYS.restDurationSec)) || 90,
   )
   const [restActive, setRestActive] = useState(false)
   const [restToken, setRestToken] = useState(0)
@@ -47,7 +45,7 @@ export default function Workout() {
 
   const changeRestDuration = (value) => {
     setRestDuration(value)
-    localStorage.setItem(REST_DURATION_KEY, String(value))
+    localStorage.setItem(STORAGE_KEYS.restDurationSec, String(value))
   }
 
   const handleToggleComplete = async (exerciseName, index) => {
@@ -185,7 +183,7 @@ export default function Workout() {
           <div className="flex items-center justify-between rounded-2xl bg-surface p-4">
             <p className="text-xs uppercase tracking-wide text-white/40">Rest duration</p>
             <div className="flex gap-1">
-              {REST_OPTIONS.map((sec) => (
+              {REST_DURATION_OPTIONS.map((sec) => (
                 <button
                   key={sec}
                   onClick={() => changeRestDuration(sec)}

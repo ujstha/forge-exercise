@@ -1,10 +1,4 @@
-const DAY_ORDER = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-const CONDITION_LABEL = {
-  gym: 'Gym days',
-  football: 'Football days',
-  gymfootball: 'Gym + football days',
-  rest: 'Rest days',
-}
+import { WEEKDAYS, REMINDER_CONDITIONS } from '../lib/constants'
 
 function formatTime(timeOfDay) {
   const [h, m] = timeOfDay.split(':').map(Number)
@@ -17,7 +11,7 @@ function formatDays(days) {
   if (!days || days.length === 7) return 'Every day'
   const weekdays = ['mon', 'tue', 'wed', 'thu', 'fri']
   if (days.length === 5 && weekdays.every((d) => days.includes(d))) return 'Weekdays'
-  return DAY_ORDER.filter((d) => days.includes(d))
+  return WEEKDAYS.filter((d) => days.includes(d))
     .map((d) => d[0].toUpperCase() + d.slice(1))
     .join(', ')
 }
@@ -33,7 +27,9 @@ export default function ReminderCard({ reminder, onToggle, onEdit }) {
         <p className="mt-0.5 text-sm text-white">{reminder.label}</p>
         <p className="mt-0.5 text-xs text-white/40">
           {formatDays(reminder.days)}
-          {reminder.only_on ? ` · ${CONDITION_LABEL[reminder.only_on] ?? reminder.only_on}` : ''}
+          {reminder.only_on
+            ? ` · ${REMINDER_CONDITIONS.find((c) => c.value === reminder.only_on)?.label ?? reminder.only_on}`
+            : ''}
         </p>
       </div>
 

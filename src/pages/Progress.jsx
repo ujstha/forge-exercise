@@ -11,7 +11,8 @@ import {
 } from 'recharts'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
-import { TARGET_KCAL_FIELD, todayISO, addDaysISO } from '../lib/dayTypes'
+import { todayISO, addDaysISO } from '../lib/date'
+import { TARGET_KCAL_FIELD } from '../lib/constants'
 
 const CHART_AXIS_COLOR = 'rgba(255,255,255,0.4)'
 const CHART_GRID_COLOR = 'rgba(255,255,255,0.08)'

@@ -5,9 +5,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useFoodLog } from '../hooks/useFoodLog'
 import MacroRing from '../components/MacroRing'
-import { DAY_TYPES, TARGET_KCAL_FIELD, todayISO } from '../lib/dayTypes'
-
-const WEEK_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+import { todayISO } from '../lib/date'
+import { DAY_TYPES, TARGET_KCAL_FIELD, WEEKDAYS, WEEKDAY_LABELS } from '../lib/constants'
 
 function startOfWeek(date) {
   const d = new Date(date)
@@ -92,7 +91,7 @@ export default function Dashboard() {
     setWeekData(
       weekDates.map((date, i) => ({
         date,
-        label: WEEK_LABELS[i],
+        label: WEEKDAY_LABELS[WEEKDAYS[i]],
         dayType: dayTypeByDate[date] ?? null,
         completed: completedDates.has(date),
         isToday: date === today,
@@ -200,7 +199,7 @@ export default function Dashboard() {
           className="mt-6 flex items-center justify-between rounded-2xl bg-surface p-5 transition hover:bg-surface2"
         >
           <div>
-            <p className="text-xs uppercase tracking-wide text-white/40">Today's session</p>
+            <p className="text-xs uppercase tracking-wide text-white/40">Today&apos;s session</p>
             <p className="mt-1 text-lg font-semibold text-white">{session.session_name}</p>
           </div>
           <Dumbbell className="text-accent" size={28} />

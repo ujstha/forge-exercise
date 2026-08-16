@@ -4,16 +4,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useFoodLog } from '../hooks/useFoodLog'
 import FoodSearch from '../components/FoodSearch'
-import { TARGET_KCAL_FIELD, todayISO, addDaysISO } from '../lib/dayTypes'
-
-const MEAL_SLOTS = [
-  'Breakfast',
-  'Snack',
-  'Lunch',
-  'Post-workout',
-  'Dinner',
-  'Evening snack',
-]
+import { todayISO, addDaysISO } from '../lib/date'
+import { TARGET_KCAL_FIELD, MEAL_SLOTS } from '../lib/constants'
 
 function formatDisplayDate(dateISO) {
   const d = new Date(`${dateISO}T00:00:00`)
