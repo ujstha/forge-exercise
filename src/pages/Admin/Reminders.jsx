@@ -100,7 +100,7 @@ function ReminderFormModal({ initial, onClose, onSave, onDelete }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60">
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/60">
       <form
         onSubmit={handleSubmit}
         className="max-h-[85vh] w-full space-y-4 overflow-y-auto rounded-t-2xl bg-surface p-4"

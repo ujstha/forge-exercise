@@ -414,7 +414,7 @@ export default function Programmes() {
 
 function ModalShell({ title, onClose, onSubmit, children }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60">
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/60">
       <form
         onSubmit={onSubmit}
         className="max-h-[85vh] w-full space-y-3 overflow-y-auto rounded-t-2xl bg-surface p-4"
