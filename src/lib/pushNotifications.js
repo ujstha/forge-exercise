@@ -22,6 +22,10 @@ export async function subscribeToPush(userId) {
     throw new Error('Push notifications are not supported in this browser.')
   }
 
+  if (!ENV.push.vapidPublicKey) {
+    throw new Error('VITE_VAPID_PUBLIC_KEY is missing. Configure it to enable real push notifications.')
+  }
+
   const permission = await Notification.requestPermission()
   if (permission !== 'granted') {
     throw new Error('Notification permission was not granted.')

@@ -5,7 +5,6 @@ import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import {
   isPushSupported,
-  getPushPermissionState,
   subscribeToPush,
   unsubscribeFromPush,
 } from '../../lib/pushNotifications'

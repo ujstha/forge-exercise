@@ -199,7 +199,7 @@ export default function Dashboard() {
           className="mt-6 flex items-center justify-between rounded-2xl bg-surface p-5 transition hover:bg-surface2"
         >
           <div>
-            <p className="text-xs uppercase tracking-wide text-white/40">Today's session</p>
+            <p className="text-xs uppercase tracking-wide text-white/40">Today&apos;s session</p>
             <p className="mt-1 text-lg font-semibold text-white">{session.session_name}</p>
           </div>
           <Dumbbell className="text-accent" size={28} />

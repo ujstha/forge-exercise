@@ -1,10 +1,15 @@
 import { createClient } from '@supabase/supabase-js'
 import { ENV } from './constants'
+import { createMockSupabase, shouldUseMockSupabase } from './mockSupabase'
 
-if (!ENV.supabase.url || !ENV.supabase.anonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Copy .env.example to .env and fill in your project values.',
-  )
+const useMockSupabase = shouldUseMockSupabase()
+
+if (useMockSupabase) {
+  console.warn('FORGE is running in local mock mode because Supabase env vars are missing.')
 }
 
-export const supabase = createClient(ENV.supabase.url, ENV.supabase.anonKey)
+export const supabase = useMockSupabase
+  ? createMockSupabase()
+  : createClient(ENV.supabase.url, ENV.supabase.anonKey)
+
+export const isMockSupabase = useMockSupabase
