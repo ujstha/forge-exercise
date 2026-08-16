@@ -169,9 +169,9 @@ function SupplementFormModal({ initial, onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-end bg-black/60">
       <form
         onSubmit={handleSubmit}
-        className="max-h-[85vh] w-full space-y-3 overflow-y-auto rounded-t-2xl bg-surface p-4"
+        className="flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-surface"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between p-4 pb-3">
           <p className="text-lg font-semibold text-white">
             {form.id ? 'Edit supplement' : 'Add supplement'}
           </p>
@@ -180,64 +180,68 @@ function SupplementFormModal({ initial, onClose, onSave }) {
           </button>
         </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
-            Name
-          </label>
-          <input
-            required
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
-          />
-        </div>
+        <div className="flex-1 space-y-3 overflow-y-auto px-4">
+          <div>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+              Name
+            </label>
+            <input
+              required
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
+            />
+          </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
-            Dose
-          </label>
-          <input
-            value={form.dose}
-            onChange={(e) => setForm((f) => ({ ...f, dose: e.target.value }))}
-            className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
-          />
-        </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+              Dose
+            </label>
+            <input
+              value={form.dose}
+              onChange={(e) => setForm((f) => ({ ...f, dose: e.target.value }))}
+              className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
+            />
+          </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
-            Notes
-          </label>
-          <textarea
-            rows={2}
-            value={form.notes}
-            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-            className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
-          />
-        </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+              Notes
+            </label>
+            <textarea
+              rows={2}
+              value={form.notes}
+              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+              className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
+            />
+          </div>
 
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
-            Status
-          </label>
-          <div className="flex gap-2">
-            {['continue', 'finish'].map((status) => (
-              <button
-                key={status}
-                type="button"
-                onClick={() => setForm((f) => ({ ...f, status }))}
-                className={`flex-1 rounded-lg py-2 text-sm font-semibold capitalize ${
-                  form.status === status ? 'bg-accent text-black' : 'bg-surface2 text-white/60'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
+          <div>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+              Status
+            </label>
+            <div className="flex gap-2">
+              {['continue', 'finish'].map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setForm((f) => ({ ...f, status }))}
+                  className={`flex-1 rounded-lg py-2 text-sm font-semibold capitalize ${
+                    form.status === status ? 'bg-accent text-black' : 'bg-surface2 text-white/60'
+                  }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <button type="submit" className="w-full rounded-lg bg-accent py-3 font-semibold text-black">
-          Save
-        </button>
+        <div className="shrink-0 border-t border-white/5 p-4">
+          <button type="submit" className="w-full rounded-lg bg-accent py-3 font-semibold text-black">
+            Save
+          </button>
+        </div>
       </form>
     </div>
   )

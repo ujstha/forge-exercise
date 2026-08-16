@@ -344,39 +344,43 @@ function MeasurementModal({ onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-end bg-black/60">
       <form
         onSubmit={handleSubmit}
-        className="max-h-[85vh] w-full space-y-3 overflow-y-auto rounded-t-2xl bg-surface p-4"
+        className="flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-surface"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between p-4 pb-3">
           <p className="text-lg font-semibold text-white">Log measurement</p>
           <button type="button" onClick={onClose} className="text-white/60">
             <X size={22} />
           </button>
         </div>
 
-        {field('log_date', 'Date', 'date')}
-        <div className="grid grid-cols-2 gap-3">
-          {field('weight_kg', 'Weight (kg)')}
-          {field('body_fat_pct', 'Body fat %')}
-          {field('waist_cm', 'Waist (cm)')}
-          {field('chest_cm', 'Chest (cm)')}
-          {field('arm_cm', 'Arm (cm)')}
-          {field('thigh_cm', 'Thigh (cm)')}
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
-            Notes
-          </label>
-          <textarea
-            value={form.notes}
-            onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-            rows={2}
-            className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
-          />
+        <div className="flex-1 space-y-3 overflow-y-auto px-4">
+          {field('log_date', 'Date', 'date')}
+          <div className="grid grid-cols-2 gap-3">
+            {field('weight_kg', 'Weight (kg)')}
+            {field('body_fat_pct', 'Body fat %')}
+            {field('waist_cm', 'Waist (cm)')}
+            {field('chest_cm', 'Chest (cm)')}
+            {field('arm_cm', 'Arm (cm)')}
+            {field('thigh_cm', 'Thigh (cm)')}
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+              Notes
+            </label>
+            <textarea
+              value={form.notes}
+              onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
+              rows={2}
+              className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
+            />
+          </div>
         </div>
 
-        <button type="submit" className="w-full rounded-lg bg-accent py-3 font-semibold text-black">
-          Save
-        </button>
+        <div className="shrink-0 border-t border-white/5 p-4">
+          <button type="submit" className="w-full rounded-lg bg-accent py-3 font-semibold text-black">
+            Save
+          </button>
+        </div>
       </form>
     </div>
   )

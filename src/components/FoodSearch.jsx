@@ -54,7 +54,8 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
   const gramsNum = Number(grams) || 0
   const preview = selectedFood ? computeMacros(selectedFood, gramsNum) : null
 
-  const handleConfirm = () => {
+  const handleConfirm = (e) => {
+    e.preventDefault()
     if (!selectedFood || gramsNum <= 0) return
     onConfirm({
       food_id: selectedFood.id,
@@ -65,10 +66,15 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
     })
   }
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault()
+    if (results.length === 1) selectFood(results[0])
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/60">
-      <div className="max-h-[85vh] w-full overflow-y-auto rounded-t-2xl bg-surface p-4">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-surface">
+        <div className="flex shrink-0 items-center justify-between p-4 pb-3">
           {selectedFood ? (
             <button
               onClick={() => setSelectedFood(null)}
@@ -88,7 +94,7 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
         </div>
 
         {!selectedFood && (
-          <>
+          <form onSubmit={handleSearchSubmit} className="flex-1 overflow-y-auto px-4 pb-4">
             <div className="relative mb-3">
               <Search
                 size={16}
@@ -107,6 +113,7 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
               {results.map((food) => (
                 <button
                   key={food.id}
+                  type="button"
                   onClick={() => selectFood(food)}
                   className="flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition hover:bg-surface2"
                 >
@@ -124,60 +131,65 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
                 <p className="py-6 text-center text-sm text-white/30">No foods found.</p>
               )}
             </div>
-          </>
+          </form>
         )}
 
         {selectedFood && (
-          <div>
-            <p className="text-lg font-semibold text-white">{selectedFood.name}</p>
-            {selectedFood.serving_name && (
-              <p className="mb-4 text-xs text-white/40">
-                Serving: {selectedFood.serving_name}
-                {selectedFood.serving_size_g ? ` (${selectedFood.serving_size_g}g)` : ''}
-              </p>
-            )}
+          <form onSubmit={handleConfirm} className="flex flex-1 flex-col overflow-hidden">
+            <div className="flex-1 overflow-y-auto px-4">
+              <p className="text-lg font-semibold text-white">{selectedFood.name}</p>
+              {selectedFood.serving_name && (
+                <p className="mb-4 text-xs text-white/40">
+                  Serving: {selectedFood.serving_name}
+                  {selectedFood.serving_size_g ? ` (${selectedFood.serving_size_g}g)` : ''}
+                </p>
+              )}
 
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
-              Grams
-            </label>
-            <input
-              type="number"
-              inputMode="decimal"
-              min="0"
-              value={grams}
-              onChange={(e) => setGrams(e.target.value)}
-              className="w-full rounded-lg border border-white/10 bg-surface2 px-4 py-3 text-white outline-none focus:border-accent"
-            />
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+                Grams
+              </label>
+              <input
+                autoFocus
+                type="number"
+                inputMode="decimal"
+                min="0"
+                value={grams}
+                onChange={(e) => setGrams(e.target.value)}
+                className="w-full rounded-lg border border-white/10 bg-surface2 px-4 py-3 text-white outline-none focus:border-accent"
+              />
 
-            {preview && (
-              <div className="mt-4 grid grid-cols-4 gap-2 rounded-lg bg-surface2 p-3 text-center">
-                <div>
-                  <p className="text-sm font-semibold text-white">{preview.kcal}</p>
-                  <p className="text-[10px] uppercase text-white/40">kcal</p>
+              {preview && (
+                <div className="mt-4 grid grid-cols-4 gap-2 rounded-lg bg-surface2 p-3 text-center">
+                  <div>
+                    <p className="text-sm font-semibold text-white">{preview.kcal}</p>
+                    <p className="text-[10px] uppercase text-white/40">kcal</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{preview.protein_g}g</p>
+                    <p className="text-[10px] uppercase text-white/40">protein</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{preview.carbs_g}g</p>
+                    <p className="text-[10px] uppercase text-white/40">carbs</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{preview.fat_g}g</p>
+                    <p className="text-[10px] uppercase text-white/40">fat</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{preview.protein_g}g</p>
-                  <p className="text-[10px] uppercase text-white/40">protein</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{preview.carbs_g}g</p>
-                  <p className="text-[10px] uppercase text-white/40">carbs</p>
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{preview.fat_g}g</p>
-                  <p className="text-[10px] uppercase text-white/40">fat</p>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
 
-            <button
-              onClick={handleConfirm}
-              disabled={gramsNum <= 0}
-              className="mt-4 w-full rounded-lg bg-accent py-3 font-semibold text-black disabled:opacity-50"
-            >
-              Add to {mealSlot}
-            </button>
-          </div>
+            <div className="shrink-0 border-t border-white/5 p-4">
+              <button
+                type="submit"
+                disabled={gramsNum <= 0}
+                className="w-full rounded-lg bg-accent py-3 font-semibold text-black disabled:opacity-50"
+              >
+                Add to {mealSlot}
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>

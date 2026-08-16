@@ -147,33 +147,37 @@ function FoodFormModal({ initial, onClose, onSave }) {
     <div className="fixed inset-0 z-50 flex items-end bg-black/60">
       <form
         onSubmit={handleSubmit}
-        className="max-h-[85vh] w-full space-y-3 overflow-y-auto rounded-t-2xl bg-surface p-4"
+        className="flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-surface"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex shrink-0 items-center justify-between p-4 pb-3">
           <p className="text-lg font-semibold text-white">{form.id ? 'Edit food' : 'Add food'}</p>
           <button type="button" onClick={onClose} className="text-white/60">
             <X size={22} />
           </button>
         </div>
 
-        {field('name', 'Name', { required: true })}
-        {field('brand', 'Brand (optional)')}
+        <div className="flex-1 space-y-3 overflow-y-auto px-4">
+          {field('name', 'Name', { required: true })}
+          {field('brand', 'Brand (optional)')}
 
-        <div className="grid grid-cols-2 gap-3">
-          {field('protein_per_100g', 'Protein / 100g', { type: 'number', required: true })}
-          {field('carbs_per_100g', 'Carbs / 100g', { type: 'number', required: true })}
-          {field('fat_per_100g', 'Fat / 100g', { type: 'number', required: true })}
-          {field('kcal_per_100g', 'Kcal / 100g', { type: 'number', required: true })}
+          <div className="grid grid-cols-2 gap-3">
+            {field('protein_per_100g', 'Protein / 100g', { type: 'number', required: true })}
+            {field('carbs_per_100g', 'Carbs / 100g', { type: 'number', required: true })}
+            {field('fat_per_100g', 'Fat / 100g', { type: 'number', required: true })}
+            {field('kcal_per_100g', 'Kcal / 100g', { type: 'number', required: true })}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            {field('serving_size_g', 'Serving size (g)', { type: 'number' })}
+            {field('serving_name', 'Serving name')}
+          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          {field('serving_size_g', 'Serving size (g)', { type: 'number' })}
-          {field('serving_name', 'Serving name')}
+        <div className="shrink-0 border-t border-white/5 p-4">
+          <button type="submit" className="w-full rounded-lg bg-accent py-3 font-semibold text-black">
+            Save
+          </button>
         </div>
-
-        <button type="submit" className="w-full rounded-lg bg-accent py-3 font-semibold text-black">
-          Save
-        </button>
       </form>
     </div>
   )

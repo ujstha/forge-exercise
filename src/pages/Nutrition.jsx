@@ -214,30 +214,42 @@ function EditLogModal({ log, onClose, onSave, onDelete }) {
   const [grams, setGrams] = useState(String(log.grams))
   const gramsNum = Number(grams) || 0
 
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSave(gramsNum)
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-end bg-black/60">
-      <div className="w-full rounded-t-2xl bg-surface p-4">
-        <div className="mb-4 flex items-center justify-between">
+      <form
+        onSubmit={handleSubmit}
+        className="flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-surface"
+      >
+        <div className="flex shrink-0 items-center justify-between p-4 pb-3">
           <p className="text-lg font-semibold text-white">{log.food_name}</p>
-          <button onClick={onClose} className="text-white/60">
+          <button type="button" onClick={onClose} className="text-white/60">
             <X size={22} />
           </button>
         </div>
 
-        <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
-          Grams
-        </label>
-        <input
-          type="number"
-          inputMode="decimal"
-          min="0"
-          value={grams}
-          onChange={(e) => setGrams(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-surface2 px-4 py-3 text-white outline-none focus:border-accent"
-        />
+        <div className="flex-1 overflow-y-auto px-4">
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+            Grams
+          </label>
+          <input
+            autoFocus
+            type="number"
+            inputMode="decimal"
+            min="0"
+            value={grams}
+            onChange={(e) => setGrams(e.target.value)}
+            className="w-full rounded-lg border border-white/10 bg-surface2 px-4 py-3 text-white outline-none focus:border-accent"
+          />
+        </div>
 
-        <div className="mt-4 flex gap-2">
+        <div className="flex shrink-0 gap-2 border-t border-white/5 p-4">
           <button
+            type="button"
             onClick={onDelete}
             className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-500/30 py-3 font-semibold text-red-400"
           >
@@ -245,14 +257,14 @@ function EditLogModal({ log, onClose, onSave, onDelete }) {
             Delete
           </button>
           <button
-            onClick={() => onSave(gramsNum)}
+            type="submit"
             disabled={gramsNum <= 0}
             className="flex-1 rounded-lg bg-accent py-3 font-semibold text-black disabled:opacity-50"
           >
             Save
           </button>
         </div>
-      </div>
+      </form>
     </div>
   )
 }
