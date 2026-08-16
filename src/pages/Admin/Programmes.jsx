@@ -9,15 +9,18 @@ import {
   ChevronUp,
   ArrowUp,
   ArrowDown,
+  Lock,
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../hooks/useAuth'
 
 const EMPTY_PROGRAMME = { name: '', days_per_week: '', description: '' }
 const EMPTY_SESSION = { session_name: '', warm_up: '', cardio_after: '' }
 const EMPTY_EXERCISE = { exercise_name: '', target_sets: '', target_reps: '', form_cue: '', why: '' }
 
 export default function Programmes() {
+  const { user } = useAuth()
   const [programmes, setProgrammes] = useState([])
   const [selectedId, setSelectedId] = useState(null)
   const [sessions, setSessions] = useState([])
@@ -99,7 +102,7 @@ export default function Programmes() {
     } else {
       const { data } = await supabase
         .from('programmes')
-        .insert({ ...payload, is_preloaded: false })
+        .insert({ ...payload, user_id: user.id, is_preloaded: false })
         .select()
         .single()
       setSelectedId(data.id)
@@ -241,24 +244,30 @@ export default function Programmes() {
                   {selectedProgramme.description ? ` · ${selectedProgramme.description}` : ''}
                 </p>
               </div>
-              <div className="flex shrink-0 gap-3">
-                <button onClick={() => setProgrammeModal(selectedProgramme)} className="text-white/50">
-                  <Pencil size={16} />
-                </button>
-                <button onClick={() => deleteProgramme(selectedProgramme.id)} className="text-red-400/70">
-                  <Trash2 size={16} />
-                </button>
-              </div>
+              {selectedProgramme.is_preloaded ? (
+                <Lock size={16} className="mt-1 shrink-0 text-white/20" />
+              ) : (
+                <div className="flex shrink-0 gap-3">
+                  <button onClick={() => setProgrammeModal(selectedProgramme)} className="text-white/50">
+                    <Pencil size={16} />
+                  </button>
+                  <button onClick={() => deleteProgramme(selectedProgramme.id)} className="text-red-400/70">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
-          <button
-            onClick={() => setSessionModal({ ...EMPTY_SESSION })}
-            className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-2.5 text-sm font-medium text-white/70"
-          >
-            <Plus size={16} />
-            Add session
-          </button>
+          {!selectedProgramme.is_preloaded && (
+            <button
+              onClick={() => setSessionModal({ ...EMPTY_SESSION })}
+              className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 py-2.5 text-sm font-medium text-white/70"
+            >
+              <Plus size={16} />
+              Add session
+            </button>
+          )}
 
           <div className="space-y-3">
             {sessions.map((session, sIndex) => {
@@ -283,28 +292,30 @@ export default function Programmes() {
                       </div>
                     </button>
 
-                    <div className="flex shrink-0 items-center gap-2">
-                      <button
-                        onClick={() => moveSession(sIndex, -1)}
-                        disabled={sIndex === 0}
-                        className="text-white/30 disabled:opacity-20"
-                      >
-                        <ArrowUp size={14} />
-                      </button>
-                      <button
-                        onClick={() => moveSession(sIndex, 1)}
-                        disabled={sIndex === sessions.length - 1}
-                        className="text-white/30 disabled:opacity-20"
-                      >
-                        <ArrowDown size={14} />
-                      </button>
-                      <button onClick={() => setSessionModal(session)} className="text-white/50">
-                        <Pencil size={16} />
-                      </button>
-                      <button onClick={() => deleteSession(session.id)} className="text-red-400/70">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                    {!selectedProgramme.is_preloaded && (
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button
+                          onClick={() => moveSession(sIndex, -1)}
+                          disabled={sIndex === 0}
+                          className="text-white/30 disabled:opacity-20"
+                        >
+                          <ArrowUp size={14} />
+                        </button>
+                        <button
+                          onClick={() => moveSession(sIndex, 1)}
+                          disabled={sIndex === sessions.length - 1}
+                          className="text-white/30 disabled:opacity-20"
+                        >
+                          <ArrowDown size={14} />
+                        </button>
+                        <button onClick={() => setSessionModal(session)} className="text-white/50">
+                          <Pencil size={16} />
+                        </button>
+                        <button onClick={() => deleteSession(session.id)} className="text-red-400/70">
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {isOpen && (
@@ -336,46 +347,50 @@ export default function Programmes() {
                               <p className="mt-1 text-xs text-white/30">{ex.form_cue}</p>
                             )}
                           </div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            <button
-                              onClick={() => moveExercise(session.id, eIndex, -1)}
-                              disabled={eIndex === 0}
-                              className="text-white/30 disabled:opacity-20"
-                            >
-                              <ArrowUp size={13} />
-                            </button>
-                            <button
-                              onClick={() => moveExercise(session.id, eIndex, 1)}
-                              disabled={eIndex === exercises.length - 1}
-                              className="text-white/30 disabled:opacity-20"
-                            >
-                              <ArrowDown size={13} />
-                            </button>
-                            <button
-                              onClick={() => setExerciseModal({ sessionId: session.id, form: ex })}
-                              className="text-white/50"
-                            >
-                              <Pencil size={14} />
-                            </button>
-                            <button
-                              onClick={() => deleteExercise(ex.id)}
-                              className="text-red-400/70"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
+                          {!selectedProgramme.is_preloaded && (
+                            <div className="flex shrink-0 items-center gap-2">
+                              <button
+                                onClick={() => moveExercise(session.id, eIndex, -1)}
+                                disabled={eIndex === 0}
+                                className="text-white/30 disabled:opacity-20"
+                              >
+                                <ArrowUp size={13} />
+                              </button>
+                              <button
+                                onClick={() => moveExercise(session.id, eIndex, 1)}
+                                disabled={eIndex === exercises.length - 1}
+                                className="text-white/30 disabled:opacity-20"
+                              >
+                                <ArrowDown size={13} />
+                              </button>
+                              <button
+                                onClick={() => setExerciseModal({ sessionId: session.id, form: ex })}
+                                className="text-white/50"
+                              >
+                                <Pencil size={14} />
+                              </button>
+                              <button
+                                onClick={() => deleteExercise(ex.id)}
+                                className="text-red-400/70"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       ))}
 
-                      <button
-                        onClick={() =>
-                          setExerciseModal({ sessionId: session.id, form: { ...EMPTY_EXERCISE } })
-                        }
-                        className="flex items-center gap-1 text-xs font-medium text-accent"
-                      >
-                        <Plus size={14} />
-                        Add exercise
-                      </button>
+                      {!selectedProgramme.is_preloaded && (
+                        <button
+                          onClick={() =>
+                            setExerciseModal({ sessionId: session.id, form: { ...EMPTY_EXERCISE } })
+                          }
+                          className="flex items-center gap-1 text-xs font-medium text-accent"
+                        >
+                          <Plus size={14} />
+                          Add exercise
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
