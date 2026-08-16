@@ -213,7 +213,7 @@ export default function Workout() {
       )}
 
       {summary && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-sm rounded-2xl bg-surface p-6 text-center">
             <p className="text-sm uppercase tracking-wide text-accent">Session complete</p>
             <h2 className="mt-1 text-xl font-bold text-white">{currentSession?.session_name}</h2>

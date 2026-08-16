@@ -72,7 +72,7 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60">
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/60">
       <div className="flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-surface">
         <div className="flex shrink-0 items-center justify-between p-4 pb-3">
           {selectedFood ? (

@@ -166,7 +166,7 @@ function SupplementFormModal({ initial, onClose, onSave }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end bg-black/60">
+    <div className="fixed inset-0 z-[60] flex items-end bg-black/60">
       <form
         onSubmit={handleSubmit}
         className="flex max-h-[85vh] w-full flex-col rounded-t-2xl bg-surface"
