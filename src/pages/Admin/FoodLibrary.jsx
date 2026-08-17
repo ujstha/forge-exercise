@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
 import { MEAL_SLOTS } from '../../lib/constants'
+import ListSection from '../../components/ListSection'
 
 const EMPTY_FORM = {
   name: '',
@@ -82,36 +83,34 @@ export default function FoodLibrary() {
 
       {loading && <p className="text-white/40">Loading…</p>}
 
-      <div className="space-y-2">
+      <ListSection>
         {foods.map((food) => (
-          <div key={food.id} className="rounded-xl bg-surface p-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="font-medium text-white">{food.name}</p>
-                <p className="text-xs text-white/40">
-                  {food.brand ? `${food.brand} · ` : ''}
-                  {food.kcal_per_100g} kcal · P{food.protein_per_100g} C{food.carbs_per_100g} F
-                  {food.fat_per_100g} /100g
-                  {food.serving_name ? ` · ${food.serving_name}` : ''}
-                </p>
-              </div>
-
-              {food.is_preloaded ? (
-                <Lock size={16} className="mt-1 shrink-0 text-white/20" />
-              ) : (
-                <div className="flex shrink-0 gap-3">
-                  <button onClick={() => setEditingFood(food)} className="text-white/50">
-                    <Pencil size={16} />
-                  </button>
-                  <button onClick={() => handleDelete(food.id)} className="text-red-400/70">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              )}
+          <div key={food.id} className="flex items-start justify-between gap-3 px-4 py-3">
+            <div className="min-w-0">
+              <p className="truncate font-medium text-white">{food.name}</p>
+              <p className="text-xs text-white/40">
+                {food.brand ? `${food.brand} · ` : ''}
+                {food.kcal_per_100g} kcal · P{food.protein_per_100g} C{food.carbs_per_100g} F
+                {food.fat_per_100g} /100g
+                {food.serving_name ? ` · ${food.serving_name}` : ''}
+              </p>
             </div>
+
+            {food.is_preloaded ? (
+              <Lock size={16} className="mt-1 shrink-0 text-white/20" />
+            ) : (
+              <div className="flex shrink-0 gap-3">
+                <button onClick={() => setEditingFood(food)} className="text-white/50">
+                  <Pencil size={16} />
+                </button>
+                <button onClick={() => handleDelete(food.id)} className="text-red-400/70">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            )}
           </div>
         ))}
-      </div>
+      </ListSection>
 
       {editingFood && (
         <FoodFormModal

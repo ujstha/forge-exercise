@@ -34,7 +34,6 @@ export default function Nutrition() {
   const [editingLog, setEditingLog] = useState(null)
   const [editError, setEditError] = useState(null)
   const [usualFoods, setUsualFoods] = useState([])
-  const [quickGrams, setQuickGrams] = useState({})
 
   useEffect(() => {
     if (!user) return
@@ -85,33 +84,18 @@ export default function Nutrition() {
     return acc
   }, {})
 
-  const quickFoodsBySlot = MEAL_SLOTS.reduce((acc, slot) => {
-    const loggedFoodIds = new Set(logsBySlot[slot].map((l) => l.food_id))
-    acc[slot] = usualFoods.filter(
-      (f) => f.usual_meal_slot === slot && !loggedFoodIds.has(f.id),
-    )
-    return acc
-  }, {})
-
   const handleAddFood = async (entry) => {
     await addLog(entry)
     setAddingSlot(null)
   }
 
   const handleQuickLog = async (food, slot) => {
-    const grams = Number(quickGrams[food.id] ?? food.usual_grams) || 0
-    if (grams <= 0) return
     await addLog({
       food_id: food.id,
       food_name: food.name,
       meal_slot: slot,
-      grams,
-      ...macrosForGrams(food, grams),
-    })
-    setQuickGrams((g) => {
-      const next = { ...g }
-      delete next[food.id]
-      return next
+      grams: food.usual_grams,
+      ...macrosForGrams(food, food.usual_grams),
     })
   }
 
@@ -186,6 +170,12 @@ export default function Nutrition() {
             { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
           )
 
+          const usualForSlot = usualFoods.filter((f) => f.usual_meal_slot === slot)
+          const usualFoodIds = new Set(usualForSlot.map((f) => f.id))
+          const loggedByFoodId = new Map(items.map((l) => [l.food_id, l]))
+          const extraItems = items.filter((l) => !usualFoodIds.has(l.food_id))
+          const hasRows = usualForSlot.length > 0 || extraItems.length > 0
+
           return (
             <div key={slot} className="rounded-2xl bg-surface p-4">
               <div className="flex items-center justify-between">
@@ -207,52 +197,40 @@ export default function Nutrition() {
                 </button>
               </div>
 
-              {items.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  {items.map((log) => (
-                    <button
+              {hasRows && (
+                <div className="mt-3 divide-y divide-white/5">
+                  {usualForSlot.map((food) => {
+                    const log = loggedByFoodId.get(food.id)
+                    return (
+                      <MealRow
+                        key={food.id}
+                        done={Boolean(log)}
+                        primary={log ? log.food_name : food.name}
+                        secondary={log ? `${log.grams}g` : `usual ${food.usual_grams}g`}
+                        trailing={log ? `${Math.round(log.kcal)} kcal` : null}
+                        onClick={() => {
+                          if (log) {
+                            setEditError(null)
+                            setEditingLog(log)
+                          } else {
+                            handleQuickLog(food, slot)
+                          }
+                        }}
+                      />
+                    )
+                  })}
+                  {extraItems.map((log) => (
+                    <MealRow
                       key={log.id}
+                      done
+                      primary={log.food_name}
+                      secondary={`${log.grams}g`}
+                      trailing={`${Math.round(log.kcal)} kcal`}
                       onClick={() => {
                         setEditError(null)
                         setEditingLog(log)
                       }}
-                      className="flex w-full items-center justify-between rounded-lg bg-surface2 px-3 py-2 text-left"
-                    >
-                      <div>
-                        <p className="text-sm text-white">{log.food_name}</p>
-                        <p className="text-xs text-white/40">{log.grams}g</p>
-                      </div>
-                      <p className="text-xs text-white/50">{Math.round(log.kcal)} kcal</p>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {quickFoodsBySlot[slot].length > 0 && (
-                <div className="mt-3 space-y-2">
-                  {quickFoodsBySlot[slot].map((food) => (
-                    <div
-                      key={food.id}
-                      className="flex items-center gap-2 rounded-lg border border-dashed border-white/15 px-3 py-2"
-                    >
-                      <p className="flex-1 truncate text-sm text-white/70">{food.name}</p>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        min="0"
-                        value={quickGrams[food.id] ?? food.usual_grams}
-                        onChange={(e) =>
-                          setQuickGrams((g) => ({ ...g, [food.id]: e.target.value }))
-                        }
-                        className="w-16 rounded border border-white/10 bg-surface2 px-2 py-1 text-center text-sm text-white outline-none focus:border-accent"
-                      />
-                      <button
-                        onClick={() => handleQuickLog(food, slot)}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-accent/50 text-accent"
-                      >
-                        <Check size={14} />
-                      </button>
-                    </div>
+                    />
                   ))}
                 </div>
               )}
@@ -278,6 +256,25 @@ export default function Nutrition() {
         />
       )}
     </div>
+  )
+}
+
+function MealRow({ done, primary, secondary, trailing, onClick }) {
+  return (
+    <button onClick={onClick} className="flex w-full items-center gap-3 py-2.5 text-left">
+      <span
+        className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+          done ? 'bg-accent text-black' : 'border border-white/20'
+        }`}
+      >
+        {done && <Check size={12} strokeWidth={3} />}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className={`truncate text-sm ${done ? 'text-white' : 'text-white/60'}`}>{primary}</p>
+        <p className="text-xs text-white/35">{secondary}</p>
+      </div>
+      {trailing && <p className="shrink-0 text-xs text-white/50">{trailing}</p>}
+    </button>
   )
 }
 

@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, Pencil, Trash2, X, ArrowUp, ArrowDown } from 'lucide-r
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import ListSection from '../../components/ListSection'
 
 const EMPTY_FORM = { name: '', dose: '', notes: '', status: 'continue' }
 
@@ -93,58 +94,56 @@ export default function Supplements() {
 
       {loading && <p className="text-white/40">Loading…</p>}
 
-      <div className="space-y-2">
+      <ListSection>
         {supplements.map((s, i) => (
-          <div key={s.id} className="rounded-xl bg-surface p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-medium text-white">{s.name}</p>
-                  <button
-                    onClick={() => toggleStatus(s)}
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                      s.status === 'continue'
-                        ? 'bg-accent/20 text-accent'
-                        : 'bg-white/10 text-white/50'
-                    }`}
-                  >
-                    {s.status}
-                  </button>
-                </div>
-                {s.dose && <p className="mt-0.5 text-xs text-white/40">{s.dose}</p>}
-                {s.notes && <p className="mt-0.5 text-xs text-white/30">{s.notes}</p>}
+          <div key={s.id} className="flex items-start justify-between gap-3 px-4 py-3">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <p className="truncate font-medium text-white">{s.name}</p>
+                <button
+                  onClick={() => toggleStatus(s)}
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                    s.status === 'continue'
+                      ? 'bg-accent/20 text-accent'
+                      : 'bg-white/10 text-white/50'
+                  }`}
+                >
+                  {s.status}
+                </button>
               </div>
+              {s.dose && <p className="mt-0.5 text-xs text-white/40">{s.dose}</p>}
+              {s.notes && <p className="mt-0.5 text-xs text-white/30">{s.notes}</p>}
+            </div>
 
-              <div className="flex shrink-0 flex-col items-center gap-2">
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => move(i, -1)}
-                    disabled={i === 0}
-                    className="text-white/30 disabled:opacity-20"
-                  >
-                    <ArrowUp size={14} />
-                  </button>
-                  <button
-                    onClick={() => move(i, 1)}
-                    disabled={i === supplements.length - 1}
-                    className="text-white/30 disabled:opacity-20"
-                  >
-                    <ArrowDown size={14} />
-                  </button>
-                </div>
-                <div className="flex gap-3">
-                  <button onClick={() => setEditing(s)} className="text-white/50">
-                    <Pencil size={16} />
-                  </button>
-                  <button onClick={() => handleDelete(s.id)} className="text-red-400/70">
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+            <div className="flex shrink-0 flex-col items-center gap-2">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => move(i, -1)}
+                  disabled={i === 0}
+                  className="text-white/30 disabled:opacity-20"
+                >
+                  <ArrowUp size={14} />
+                </button>
+                <button
+                  onClick={() => move(i, 1)}
+                  disabled={i === supplements.length - 1}
+                  className="text-white/30 disabled:opacity-20"
+                >
+                  <ArrowDown size={14} />
+                </button>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setEditing(s)} className="text-white/50">
+                  <Pencil size={16} />
+                </button>
+                <button onClick={() => handleDelete(s.id)} className="text-red-400/70">
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           </div>
         ))}
-      </div>
+      </ListSection>
 
       {editing && (
         <SupplementFormModal

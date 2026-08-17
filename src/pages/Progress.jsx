@@ -275,12 +275,12 @@ export default function Progress() {
       <section className="mt-4 rounded-2xl bg-surface p-4">
         <p className="mb-3 text-xs uppercase tracking-wide text-white/40">Measurements</p>
         {bodyLogs.length === 0 && <p className="text-sm text-white/30">No measurements logged yet.</p>}
-        <div className="space-y-2">
+        <div className="-mx-4 divide-y divide-white/5">
           {[...bodyLogs]
             .reverse()
             .slice(0, 10)
             .map((log) => (
-              <div key={log.id} className="rounded-lg bg-surface2 px-3 py-2 text-sm">
+              <div key={log.id} className="px-4 py-2.5 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-white">{formatShortDate(log.log_date)}</span>
                   {log.weight_kg != null && <span className="text-white/60">{log.weight_kg} kg</span>}

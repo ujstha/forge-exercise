@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, X, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useReminders } from '../../hooks/useReminders'
 import ReminderCard from '../../components/ReminderCard'
+import ListSection from '../../components/ListSection'
 import { WEEKDAYS, REMINDER_CONDITIONS } from '../../lib/constants'
 
 const EMPTY_FORM = {
@@ -61,7 +62,7 @@ export default function Reminders() {
 
       {loading && <p className="text-white/40">Loading…</p>}
 
-      <div className="space-y-2">
+      <ListSection>
         {reminders.map((r) => (
           <ReminderCard
             key={r.id}
@@ -70,7 +71,7 @@ export default function Reminders() {
             onEdit={() => setEditing(r)}
           />
         ))}
-      </div>
+      </ListSection>
 
       {editing && (
         <ReminderFormModal

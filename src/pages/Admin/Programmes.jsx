@@ -333,52 +333,58 @@ export default function Programmes() {
                         </p>
                       )}
 
-                      {exercises.map((ex, eIndex) => (
-                        <div
-                          key={ex.id}
-                          className="flex items-start justify-between gap-2 rounded-lg bg-surface2 p-3"
-                        >
-                          <div>
-                            <p className="text-sm font-medium text-white">{ex.exercise_name}</p>
-                            <p className="text-xs text-white/40">
-                              {ex.target_sets ?? '—'} sets × {ex.target_reps ?? '—'} reps
-                            </p>
-                            {ex.form_cue && (
-                              <p className="mt-1 text-xs text-white/30">{ex.form_cue}</p>
-                            )}
-                          </div>
-                          {!selectedProgramme.is_preloaded && (
-                            <div className="flex shrink-0 items-center gap-2">
-                              <button
-                                onClick={() => moveExercise(session.id, eIndex, -1)}
-                                disabled={eIndex === 0}
-                                className="text-white/30 disabled:opacity-20"
-                              >
-                                <ArrowUp size={13} />
-                              </button>
-                              <button
-                                onClick={() => moveExercise(session.id, eIndex, 1)}
-                                disabled={eIndex === exercises.length - 1}
-                                className="text-white/30 disabled:opacity-20"
-                              >
-                                <ArrowDown size={13} />
-                              </button>
-                              <button
-                                onClick={() => setExerciseModal({ sessionId: session.id, form: ex })}
-                                className="text-white/50"
-                              >
-                                <Pencil size={14} />
-                              </button>
-                              <button
-                                onClick={() => deleteExercise(ex.id)}
-                                className="text-red-400/70"
-                              >
-                                <Trash2 size={14} />
-                              </button>
+                      {exercises.length > 0 && (
+                        <div className="divide-y divide-white/5">
+                          {exercises.map((ex, eIndex) => (
+                            <div
+                              key={ex.id}
+                              className="flex items-start justify-between gap-2 py-2.5"
+                            >
+                              <div>
+                                <p className="text-sm font-medium text-white">{ex.exercise_name}</p>
+                                <p className="text-xs text-white/40">
+                                  {ex.target_sets ?? '—'} sets × {ex.target_reps ?? '—'} reps
+                                </p>
+                                {ex.form_cue && (
+                                  <p className="mt-1 text-xs text-white/30">{ex.form_cue}</p>
+                                )}
+                              </div>
+                              {!selectedProgramme.is_preloaded && (
+                                <div className="flex shrink-0 items-center gap-2">
+                                  <button
+                                    onClick={() => moveExercise(session.id, eIndex, -1)}
+                                    disabled={eIndex === 0}
+                                    className="text-white/30 disabled:opacity-20"
+                                  >
+                                    <ArrowUp size={13} />
+                                  </button>
+                                  <button
+                                    onClick={() => moveExercise(session.id, eIndex, 1)}
+                                    disabled={eIndex === exercises.length - 1}
+                                    className="text-white/30 disabled:opacity-20"
+                                  >
+                                    <ArrowDown size={13} />
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      setExerciseModal({ sessionId: session.id, form: ex })
+                                    }
+                                    className="text-white/50"
+                                  >
+                                    <Pencil size={14} />
+                                  </button>
+                                  <button
+                                    onClick={() => deleteExercise(ex.id)}
+                                    className="text-red-400/70"
+                                  >
+                                    <Trash2 size={14} />
+                                  </button>
+                                </div>
+                              )}
                             </div>
-                          )}
+                          ))}
                         </div>
-                      ))}
+                      )}
 
                       {!selectedProgramme.is_preloaded && (
                         <button

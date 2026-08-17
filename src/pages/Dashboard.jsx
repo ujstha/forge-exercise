@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, Dumbbell } from 'lucide-react'
+import ListSection from '../components/ListSection'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useFoodLog } from '../hooks/useFoodLog'
@@ -235,32 +236,32 @@ export default function Dashboard() {
               {takenCount}/{supplements.length} taken
             </p>
           </div>
-          <div className="space-y-2">
+          <ListSection>
             {supplements.map((s) => {
               const taken = takenIds.has(s.id)
               return (
                 <button
                   key={s.id}
                   onClick={() => toggleSupplement(s.id)}
-                  className="flex w-full items-center justify-between rounded-xl bg-surface px-4 py-3 text-left"
+                  className="flex w-full items-center gap-3 px-4 py-3 text-left"
                 >
-                  <div>
+                  <span
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                      taken ? 'bg-accent text-black' : 'border border-white/20'
+                    }`}
+                  >
+                    {taken && <Check size={12} strokeWidth={3} />}
+                  </span>
+                  <div className="min-w-0 flex-1">
                     <p className={`font-medium ${taken ? 'text-white/40 line-through' : 'text-white'}`}>
                       {s.name}
                     </p>
                     {s.dose && <p className="text-xs text-white/40">{s.dose}</p>}
                   </div>
-                  <span
-                    className={`flex h-6 w-6 items-center justify-center rounded-full border ${
-                      taken ? 'border-accent bg-accent text-black' : 'border-white/20 text-transparent'
-                    }`}
-                  >
-                    <Check size={16} />
-                  </span>
                 </button>
               )
             })}
-          </div>
+          </ListSection>
         </div>
       )}
 

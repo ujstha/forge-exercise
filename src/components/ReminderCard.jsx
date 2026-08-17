@@ -20,7 +20,7 @@ export default function ReminderCard({ reminder, onToggle, onEdit }) {
   return (
     <button
       onClick={onEdit}
-      className="flex w-full items-center justify-between rounded-xl bg-surface p-4 text-left"
+      className="flex w-full items-center justify-between px-4 py-3 text-left"
     >
       <div className={reminder.is_active ? '' : 'opacity-40'}>
         <p className="text-xl font-semibold text-white">{formatTime(reminder.time_of_day)}</p>
