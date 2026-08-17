@@ -33,12 +33,12 @@ export default function Nutrition() {
   const [addingSlot, setAddingSlot] = useState(null)
   const [editingLog, setEditingLog] = useState(null)
   const [editError, setEditError] = useState(null)
-  const [usualFoods, setUsualFoods] = useState([])
+  const [favorites, setFavorites] = useState([])
 
   useEffect(() => {
     if (!user) return
     ;(async () => {
-      const [profileRes, dayTypeRes, usualFoodsRes] = await Promise.all([
+      const [profileRes, dayTypeRes, favoritesRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase
           .from('day_type_logs')
@@ -46,15 +46,11 @@ export default function Nutrition() {
           .eq('user_id', user.id)
           .eq('log_date', date)
           .maybeSingle(),
-        supabase
-          .from('foods')
-          .select('*')
-          .not('usual_meal_slot', 'is', null)
-          .or(`user_id.is.null,user_id.eq.${user.id}`),
+        supabase.from('food_favorites').select('*, food:foods(*)').eq('user_id', user.id),
       ])
       if (profileRes.data) setProfile(profileRes.data)
       setDayType(dayTypeRes.data?.day_type ?? null)
-      setUsualFoods(usualFoodsRes.data ?? [])
+      setFavorites(favoritesRes.data ?? [])
     })()
   }, [user, date])
 
@@ -89,13 +85,13 @@ export default function Nutrition() {
     setAddingSlot(null)
   }
 
-  const handleQuickLog = async (food, slot) => {
+  const handleQuickLog = async (favorite) => {
     await addLog({
-      food_id: food.id,
-      food_name: food.name,
-      meal_slot: slot,
-      grams: food.usual_grams,
-      ...macrosForGrams(food, food.usual_grams),
+      food_id: favorite.food.id,
+      food_name: favorite.food.name,
+      meal_slot: favorite.meal_slot,
+      grams: favorite.usual_grams,
+      ...macrosForGrams(favorite.food, favorite.usual_grams),
     })
   }
 
@@ -170,11 +166,11 @@ export default function Nutrition() {
             { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
           )
 
-          const usualForSlot = usualFoods.filter((f) => f.usual_meal_slot === slot)
-          const usualFoodIds = new Set(usualForSlot.map((f) => f.id))
+          const favoritesForSlot = favorites.filter((f) => f.meal_slot === slot)
+          const favoriteFoodIds = new Set(favoritesForSlot.map((f) => f.food_id))
           const loggedByFoodId = new Map(items.map((l) => [l.food_id, l]))
-          const extraItems = items.filter((l) => !usualFoodIds.has(l.food_id))
-          const hasRows = usualForSlot.length > 0 || extraItems.length > 0
+          const extraItems = items.filter((l) => !favoriteFoodIds.has(l.food_id))
+          const hasRows = favoritesForSlot.length > 0 || extraItems.length > 0
 
           return (
             <div key={slot} className="rounded-2xl bg-surface p-4">
@@ -199,21 +195,21 @@ export default function Nutrition() {
 
               {hasRows && (
                 <div className="mt-3 divide-y divide-white/5">
-                  {usualForSlot.map((food) => {
-                    const log = loggedByFoodId.get(food.id)
+                  {favoritesForSlot.map((favorite) => {
+                    const log = loggedByFoodId.get(favorite.food_id)
                     return (
                       <MealRow
-                        key={food.id}
+                        key={favorite.id}
                         done={Boolean(log)}
-                        primary={log ? log.food_name : food.name}
-                        secondary={log ? `${log.grams}g` : `usual ${food.usual_grams}g`}
+                        primary={log ? log.food_name : favorite.food.name}
+                        secondary={log ? `${log.grams}g` : `usual ${favorite.usual_grams}g`}
                         trailing={log ? `${Math.round(log.kcal)} kcal` : null}
                         onClick={() => {
                           if (log) {
                             setEditError(null)
                             setEditingLog(log)
                           } else {
-                            handleQuickLog(food, slot)
+                            handleQuickLog(favorite)
                           }
                         }}
                       />
