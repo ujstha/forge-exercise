@@ -22,6 +22,7 @@ export default function Nutrition() {
   const [dayType, setDayType] = useState(null)
   const [addingSlot, setAddingSlot] = useState(null)
   const [editingLog, setEditingLog] = useState(null)
+  const [editError, setEditError] = useState(null)
 
   useEffect(() => {
     if (!user) return
@@ -62,20 +63,28 @@ export default function Nutrition() {
   const handleSaveEdit = async (grams) => {
     if (!editingLog) return
     const factor = grams / editingLog.grams
-    await updateLog(editingLog.id, {
-      grams,
-      protein_g: Math.round(editingLog.protein_g * factor * 10) / 10,
-      carbs_g: Math.round(editingLog.carbs_g * factor * 10) / 10,
-      fat_g: Math.round(editingLog.fat_g * factor * 10) / 10,
-      kcal: Math.round(editingLog.kcal * factor),
-    })
-    setEditingLog(null)
+    try {
+      await updateLog(editingLog.id, {
+        grams,
+        protein_g: Math.round(editingLog.protein_g * factor * 10) / 10,
+        carbs_g: Math.round(editingLog.carbs_g * factor * 10) / 10,
+        fat_g: Math.round(editingLog.fat_g * factor * 10) / 10,
+        kcal: Math.round(editingLog.kcal * factor),
+      })
+      setEditingLog(null)
+    } catch (err) {
+      setEditError(err.message)
+    }
   }
 
   const handleDelete = async () => {
     if (!editingLog) return
-    await deleteLog(editingLog.id)
-    setEditingLog(null)
+    try {
+      await deleteLog(editingLog.id)
+      setEditingLog(null)
+    } catch (err) {
+      setEditError(err.message)
+    }
   }
 
   return (
@@ -148,7 +157,10 @@ export default function Nutrition() {
                   {items.map((log) => (
                     <button
                       key={log.id}
-                      onClick={() => setEditingLog(log)}
+                      onClick={() => {
+                        setEditError(null)
+                        setEditingLog(log)
+                      }}
                       className="flex w-full items-center justify-between rounded-lg bg-surface2 px-3 py-2 text-left"
                     >
                       <div>
@@ -175,6 +187,7 @@ export default function Nutrition() {
       {editingLog && (
         <EditLogModal
           log={editingLog}
+          error={editError}
           onClose={() => setEditingLog(null)}
           onSave={handleSaveEdit}
           onDelete={handleDelete}
@@ -210,7 +223,7 @@ function MacroCard({ label, consumed, target, unit }) {
   )
 }
 
-function EditLogModal({ log, onClose, onSave, onDelete }) {
+function EditLogModal({ log, error, onClose, onSave, onDelete }) {
   const [grams, setGrams] = useState(String(log.grams))
   const gramsNum = Number(grams) || 0
 
@@ -245,6 +258,7 @@ function EditLogModal({ log, onClose, onSave, onDelete }) {
             onChange={(e) => setGrams(e.target.value)}
             className="w-full rounded-lg border border-white/10 bg-surface2 px-4 py-3 text-white outline-none focus:border-accent"
           />
+          {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
         </div>
 
         <div className="flex shrink-0 gap-2 border-t border-white/5 p-4">
