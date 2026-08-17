@@ -44,10 +44,22 @@ export default function Nutrition() {
   const targetKcal = dayType && profile ? profile[TARGET_KCAL_FIELD[dayType]] : null
 
   const cards = [
-    { label: 'Kcal', consumed: totals.kcal, target: targetKcal, unit: '' },
-    { label: 'Protein', consumed: totals.protein_g, target: profile?.target_protein_g, unit: 'g' },
-    { label: 'Carbs', consumed: totals.carbs_g, target: profile?.target_carbs_g, unit: 'g' },
-    { label: 'Fat', consumed: totals.fat_g, target: profile?.target_fat_g, unit: 'g' },
+    { label: 'Kcal', consumed: totals.kcal, target: targetKcal, unit: '', color: 'accent' },
+    {
+      label: 'Protein',
+      consumed: totals.protein_g,
+      target: profile?.target_protein_g,
+      unit: 'g',
+      color: 'protein',
+    },
+    {
+      label: 'Carbs',
+      consumed: totals.carbs_g,
+      target: profile?.target_carbs_g,
+      unit: 'g',
+      color: 'carbs',
+    },
+    { label: 'Fat', consumed: totals.fat_g, target: profile?.target_fat_g, unit: 'g', color: 'fat' },
   ]
 
   const logsBySlot = MEAL_SLOTS.reduce((acc, slot) => {
@@ -197,16 +209,24 @@ export default function Nutrition() {
   )
 }
 
-function MacroCard({ label, consumed, target, unit }) {
+const CARD_COLORS = {
+  accent: { text: 'text-accent', bg: 'bg-accent', pill: 'bg-accent/10 text-accent' },
+  protein: { text: 'text-protein', bg: 'bg-protein', pill: 'bg-protein/10 text-protein' },
+  carbs: { text: 'text-carbs', bg: 'bg-carbs', pill: 'bg-carbs/10 text-carbs' },
+  fat: { text: 'text-fat', bg: 'bg-fat', pill: 'bg-fat/10 text-fat' },
+}
+
+function MacroCard({ label, consumed, target, unit, color }) {
   const hasTarget = target != null
   const remaining = hasTarget ? Math.max(target - consumed, 0) : null
   const pct = hasTarget && target > 0 ? Math.min((consumed / target) * 100, 100) : 0
   const over = hasTarget && consumed > target
+  const c = CARD_COLORS[color] ?? CARD_COLORS.accent
 
   return (
     <div className="rounded-2xl bg-surface p-4">
-      <p className="text-xs uppercase tracking-wide text-white/40">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${over ? 'text-red-400' : 'text-white'}`}>
+      <p className={`inline-block rounded px-1.5 py-0.5 text-xs font-medium ${c.pill}`}>{label}</p>
+      <p className={`mt-1.5 font-mono text-xl font-bold ${over ? 'text-red-400' : 'text-white'}`}>
         {hasTarget ? Math.round(remaining) : Math.round(consumed)}
         {unit}
       </p>
@@ -214,7 +234,7 @@ function MacroCard({ label, consumed, target, unit }) {
       {hasTarget && (
         <div className="mt-2 h-1.5 w-full rounded-full bg-white/10">
           <div
-            className={`h-1.5 rounded-full ${over ? 'bg-red-400' : 'bg-accent'}`}
+            className={`h-1.5 rounded-full ${over ? 'bg-red-400' : c.bg}`}
             style={{ width: `${pct}%` }}
           />
         </div>

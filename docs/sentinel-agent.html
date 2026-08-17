@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SENTINEL — AI Investment Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --void: #060608;
+  --deep: #0d0d12;
+  --surface: #12121a;
+  --lift: #1a1a26;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --gold: #d4a843;
+  --gold-dim: rgba(212,168,67,0.5);
+  --gold-glow: rgba(212,168,67,0.12);
+  --green: #2dd87e;
+  --green-dim: rgba(45,216,126,0.15);
+  --red: #f05252;
+  --red-dim: rgba(240,82,82,0.15);
+  --blue: #5b9cf6;
+  --text: #e8e6f0;
+  --muted: #5a5870;
+  --sub: #3a3855;
+  --syne: 'Syne', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'Instrument Sans', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--body);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  height: 48px;
+  background: var(--deep);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.brand {
+  font-family: var(--syne);
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+.brand span {
+  color: rgba(255,255,255,0.3);
+  font-weight: 400;
+  font-size: 0.7rem;
+  margin-left: 8px;
+  letter-spacing: 0.1em;
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: breathe 2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.status-text {
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.platform-pills {
+  display: flex;
+  gap: 6px;
+}
+.pill {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+}
+.pill.active { border-color: var(--gold-dim); color: var(--gold); background: var(--gold-glow); }
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: grid;
+  grid-template-columns: 240px 1fr 280px;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── LEFT PANEL ── */
+.left-panel {
+  background: var(--deep);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.panel-section {
+  padding: 12px 16px 6px;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sub);
+}
+
+/* Portfolio card */
+.port-card {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.port-total {
+  font-family: var(--syne);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.port-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  margin-top: 2px;
+}
+.port-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.port-meta-item label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sub);
+  margin-bottom: 2px;
+}
+.port-meta-item span {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--text);
+}
+
+/* Holdings */
+.holdings-list { flex: 1; overflow-y: auto; }
+.holding {
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.holding:hover { background: var(--lift); }
+.h-ticker {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--gold);
+  width: 46px;
+  flex-shrink: 0;
+}
+.h-info { flex: 1; min-width: 0; }
+.h-name {
+  font-size: 0.72rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.h-shares { font-size: 0.6rem; color: var(--muted); font-family: var(--mono); }
+.h-pnl {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  text-align: right;
+}
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.neu { color: var(--muted); }
+
+/* Add position */
+.add-pos {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.add-pos-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.add-pos-form input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.add-pos-form input:focus { border-color: var(--gold-dim); }
+.add-pos-form input::placeholder { color: var(--sub); }
+.add-pos-row { display: flex; gap: 5px; }
+.add-pos-row input { flex: 1; }
+.btn-add {
+  background: var(--gold);
+  border: none;
+  border-radius: 4px;
+  color: var(--void);
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+.btn-add:hover { opacity: 0.85; }
+
+/* ── CENTER: CHAT ── */
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--void);
+  position: relative;
+}
+
+/* Grid background */
+.chat-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(212,168,67,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,168,67,0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.quickbar {
+  display: flex;
+  gap: 6px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--deep);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.qbtn {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.qbtn:hover {
+  border-color: var(--gold-dim);
+  color: var(--gold);
+  background: var(--gold-glow);
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+.messages::-webkit-scrollbar { width: 2px; }
+.messages::-webkit-scrollbar-thumb { background: var(--sub); }
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg {
+  display: flex;
+  gap: 10px;
+  animation: msgIn 0.25s ease;
+  max-width: 100%;
+}
+.msg.user { flex-direction: row-reverse; }
+
+.avatar {
+  width: 28px; height: 28px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  letter-spacing: 0.05em;
+}
+.avatar-ai {
+  background: var(--gold-glow);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+}
+.avatar-user {
+  background: var(--lift);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--text);
+  max-width: 680px;
+}
+.msg.user .bubble {
+  background: var(--gold-glow);
+  border-color: rgba(212,168,67,0.15);
+  text-align: right;
+}
+
+.bubble h4 {
+  font-family: var(--syne);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold);
+  margin-bottom: 6px;
+  letter-spacing: 0.05em;
+}
+.bubble strong { color: var(--gold); font-weight: 500; }
+.bubble ul { padding-left: 16px; }
+.bubble li { margin: 3px 0; }
+
+/* Signal cards inside bubble */
+.signal-card {
+  margin-top: 10px;
+  background: var(--deep);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.signal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.signal-ticker {
+  font-family: var(--mono);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--gold);
+}
+.signal-name { font-size: 0.72rem; color: var(--muted); flex: 1; }
+.sig-tag {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  padding: 2px 8px;
+  border-radius: 2px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.sig-buy { background: var(--green-dim); color: var(--green); border: 1px solid rgba(45,216,126,0.3); }
+.sig-sell { background: var(--red-dim); color: var(--red); border: 1px solid rgba(240,82,82,0.3); }
+.sig-hold { background: rgba(212,168,67,0.1); color: var(--gold); border: 1px solid rgba(212,168,67,0.25); }
+.sig-watch { background: rgba(91,156,246,0.1); color: var(--blue); border: 1px solid rgba(91,156,246,0.25); }
+
+.signal-body { padding: 8px 12px; font-size: 0.75rem; line-height: 1.55; color: #aaa; }
+.signal-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--border);
+}
+.metric {
+  padding: 7px 12px;
+  border-right: 1px solid var(--border);
+}
+.metric:last-child { border-right: none; }
+.metric-label { font-family: var(--mono); font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--sub); }
+.metric-val { font-family: var(--mono); font-size: 0.72rem; color: var(--text); margin-top: 2px; }
+
+.signal-actions {
+  display: flex;
+  border-top: 1px solid var(--border);
+}
+.sig-action {
+  flex: 1;
+  padding: 7px;
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--muted);
+}
+.sig-action:last-child { border-right: none; }
+.sig-action:hover { background: var(--lift); }
+.sig-action.buy:hover { color: var(--green); background: var(--green-dim); }
+.sig-action.sell:hover { color: var(--red); background: var(--red-dim); }
+
+/* Thinking dots */
+.thinking { display: flex; gap: 4px; align-items: center; padding: 3px 0; }
+.dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: throb 1.2s ease-in-out infinite;
+  opacity: 0.4;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes throb {
+  0%,100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Input */
+.input-area {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--deep);
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+textarea {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 9px 12px;
+  font-family: var(--body);
+  font-size: 0.83rem;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  max-height: 100px;
+  min-height: 38px;
+  transition: border-color 0.2s;
+}
+textarea:focus { border-color: var(--gold-dim); }
+textarea::placeholder { color: var(--sub); }
+.send-btn {
+  width: 38px; height: 38px;
+  background: var(--gold);
+  border: none;
+  border-radius: 4px;
+  color: var(--void);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+.send-btn:hover { opacity: 0.85; }
+.send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.send-btn svg { width: 14px; height: 14px; }
+
+.disclaimer {
+  padding: 4px 16px;
+  font-family: var(--mono);
+  font-size: 0.52rem;
+  color: var(--sub);
+  letter-spacing: 0.05em;
+  background: var(--deep);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ── RIGHT PANEL ── */
+.right-panel {
+  background: var(--deep);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.log-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.log-list::-webkit-scrollbar { width: 2px; }
+.log-list::-webkit-scrollbar-thumb { background: var(--sub); }
+
+.log-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.log-item:hover { background: var(--lift); }
+.log-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.log-ticker {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--gold);
+  font-weight: 500;
+}
+.log-date {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  color: var(--sub);
+  flex: 1;
+  text-align: right;
+}
+.log-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.log-action {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  padding: 1px 6px;
+  border-radius: 2px;
+  text-transform: uppercase;
+}
+.log-prices {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  flex: 1;
+}
+.log-status {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+.st-active { background: rgba(91,156,246,0.12); color: var(--blue); }
+.st-target { background: var(--green-dim); color: var(--green); }
+.st-stop { background: var(--red-dim); color: var(--red); }
+.st-pending { background: rgba(90,88,112,0.3); color: var(--muted); }
+.st-closed { background: rgba(90,88,112,0.2); color: var(--sub); }
+
+/* Health score */
+.health-bar {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.health-score {
+  font-family: var(--syne);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.health-label { font-family: var(--mono); font-size: 0.6rem; color: var(--muted); letter-spacing: 0.1em; }
+.risk-meter {
+  height: 3px;
+  background: var(--surface);
+  border-radius: 2px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.risk-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), var(--gold), var(--red));
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+/* No-log placeholder */
+.no-log {
+  padding: 20px 16px;
+  font-size: 0.75rem;
+  color: var(--sub);
+  font-style: italic;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* Scrollbar */
+.holdings-list::-webkit-scrollbar { width: 2px; }
+.holdings-list::-webkit-scrollbar-thumb { background: var(--sub); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="brand">SENTINEL <span>AI INVESTMENT AGENT</span></div>
+  <div class="topbar-right">
+    <div class="platform-pills">
+      <div class="pill active">NORDNET</div>
+      <div class="pill active">T212</div>
+      <div class="pill">FI · EUR</div>
+    </div>
+    <div class="status-dot"></div>
+    <div class="status-text">LIVE</div>
+  </div>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: PORTFOLIO -->
+  <aside class="left-panel">
+    <div class="panel-section">Portfolio</div>
+    <div class="port-card">
+      <div class="port-total" id="port-total">€300.00</div>
+      <div class="port-label">TOTAL VALUE</div>
+      <div class="port-meta">
+        <div class="port-meta-item">
+          <label>Invested</label>
+          <span id="port-invested">€0.00</span>
+        </div>
+        <div class="port-meta-item">
+          <label>Cash</label>
+          <span id="port-cash">€300.00</span>
+        </div>
+        <div class="port-meta-item">
+          <label>P&L</label>
+          <span id="port-pnl" class="neu">€0.00</span>
+        </div>
+        <div class="port-meta-item">
+          <label>Hard Stop</label>
+          <span id="port-stop" style="color:var(--red)">€60.00</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">Holdings</div>
+    <div class="holdings-list" id="holdings-list">
+      <div class="no-log" style="padding:16px 14px; font-style:normal;">No positions yet.<br/>Ask the agent or add below.</div>
+    </div>
+
+    <div class="add-pos">
+      <div class="panel-section" style="padding:0 0 6px 0;">Add Position</div>
+      <div class="add-pos-form">
+        <input type="text" id="p-ticker" placeholder="Ticker (e.g. ASML)" />
+        <div class="add-pos-row">
+          <input type="number" id="p-shares" placeholder="Shares" min="0.001" step="any" />
+          <input type="number" id="p-price" placeholder="Avg €" min="0" step="any" />
+        </div>
+        <div class="add-pos-row">
+          <input type="text" id="p-name" placeholder="Name (optional)" style="flex:2;" />
+          <select id="p-platform" style="flex:1; background:var(--surface); border:1px solid var(--border); border-radius:4px; color:var(--text); padding:6px 6px; font-family:var(--mono); font-size:0.62rem; outline:none;">
+            <option value="Nordnet">NN</option>
+            <option value="T212">T212</option>
+          </select>
+        </div>
+        <button class="btn-add" onclick="addPosition()">+ ADD POSITION</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CENTER: CHAT -->
+  <main class="chat-panel">
+    <div class="quickbar">
+      <span style="font-family:var(--mono);font-size:0.55rem;color:var(--sub);text-transform:uppercase;letter-spacing:0.1em;margin-right:2px;">Quick:</span>
+      <button class="qbtn" onclick="quick('Scan the market right now. Give me the top 3 opportunities. Use Leopold bottleneck logic — what does the AI buildout need that is not yet priced in?')">⚡ Scan Now</button>
+      <button class="qbtn" onclick="quick('Check my portfolio. Search current prices for everything I hold and tell me what to do — hold, cut, or take profit.')">📊 Check Portfolio</button>
+      <button class="qbtn" onclick="quick('Run a Leopold-framework analysis. What are the current physical bottlenecks in AI infrastructure that are underpriced right now in May 2026?')">🧠 Leopold Scan</button>
+      <button class="qbtn" onclick="quick('Build me a full portfolio allocation for €240 deployable capital (keeping €60 cash reserve). Show entry zone, target, stop-loss, and which platform for each.')">📐 Build Portfolio</button>
+      <button class="qbtn" onclick="quick('Weekly briefing. What happened in markets this week? What should I watch next week? Any catalysts coming?')">📰 Weekly Brief</button>
+      <button class="qbtn" onclick="quick('Exit check. Should I sell anything right now? Be direct.')">🚪 Exit Check</button>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="msg agent">
+        <div class="avatar avatar-ai">AI</div>
+        <div class="bubble">
+          <h4>SENTINEL ONLINE</h4>
+          <p>I know your full context. Here's what I'm working with:</p>
+          <ul style="margin-top:6px;">
+            <li><strong>Platforms:</strong> Nordnet (long-term, tax-auto) + Trading212 (active, fractional)</li>
+            <li><strong>Budget:</strong> €300 · Deployable: €240 · Cash buffer: €60 hard</li>
+            <li><strong>Hard stop:</strong> If total losses hit €60, everything goes to cash</li>
+            <li><strong>Framework:</strong> Leopold bottleneck logic — buy what AI physically needs before the crowd names it</li>
+            <li><strong>Conviction plays on radar:</strong> ASML, TSMC, CEG, FCX</li>
+            <li><strong>Style:</strong> Cautious growth — steady wins, not moonshots</li>
+          </ul>
+          <p style="margin-top:8px; font-size:0.76rem; color:var(--muted);">I search the web before every recommendation. I will never tell you to buy something I haven't looked up live. Use the quick actions above or just talk to me.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <textarea id="user-input" placeholder="Ask anything, or just say what you're thinking..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+    <div class="disclaimer">SENTINEL is AI. Not financial advice. Paper/real trading is your decision. Always verify before acting. · Built for Finland · Nordnet + Trading212</div>
+  </main>
+
+  <!-- RIGHT: RECOMMENDATION LOG -->
+  <aside class="right-panel">
+    <div class="panel-section">Recommendation Log</div>
+    <div class="log-list" id="log-list">
+      <div class="no-log">No recommendations yet.<br/>Run a scan or ask for a portfolio build.</div>
+    </div>
+
+    <div class="health-bar">
+      <div class="health-label">PORTFOLIO HEALTH</div>
+      <div class="health-score" id="health-score">— AWAITING DATA</div>
+      <div class="risk-meter">
+        <div class="risk-fill" id="risk-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────────────
+let portfolio = { cash: 300, holdings: {}, startingBudget: 300 };
+let recLog = [];
+let chatHistory = [];
+
+const SYSTEM = `You are SENTINEL, an elite AI investment agent. You know everything about this specific user:
+
+USER PROFILE (never forget this):
+- Location: Finland, based in Oulu
+- Platforms: Nordnet (use for long-term holds — has automatic Finnish tax reporting to vero.fi) and Trading212 (use for active/short-term plays — zero commission, fractional shares from €1)
+- Budget: €300 total. €240 deployable. €60 cash buffer — NEVER touch this.
+- Hard stop rule: If total portfolio losses reach €60 (20% of €300), move EVERYTHING to cash immediately.
+- Risk style: Cautious growth. Small steady wins. Not moonshots.
+- Investment framework: Leopold Aschenbrenner's "Situational Awareness" bottleneck thesis — find what AI physically needs that isn't priced in yet. Don't buy the hype. Buy the necessity.
+
+CONVICTION PLAYS WE'VE DISCUSSED (these are on the radar):
+- ASML (Amsterdam) — Only maker of EUV lithography machines. Every chip fab on earth needs them. Monopoly. Available on both platforms.
+- TSMC (NYSE: TSM) — Makes every chip that matters. Being de-risked by governments building fabs. Available on T212.
+- CEG (Constellation Energy) — Nuclear power. Leopold's own play. Powers Microsoft AI datacenters. Available on T212.
+- FCX (Freeport-McMoRan) — Copper. Needed for AI datacenters, EVs, renewables. Structurally undersupplied. Available on T212.
+
+PLATFORM RULES (critical — ARIA kept getting this wrong):
+- Before recommending ANY stock, verify it's available on the user's platforms.
+- Nordic large-caps and ETFs: likely on Nordnet.
+- US stocks via fractional: Trading212 (10,000+ stocks, from €1).
+- Crypto: Trading212 has it (relaunched 2025). Nordnet has crypto indices only.
+- ALWAYS specify WHICH platform to use for each recommendation.
+
+YOUR JOB:
+1. SEARCH THE WEB before every price or recommendation. Never use memory for live data.
+2. Give BUY/SELL/HOLD signals with clear entry zone, target, stop-loss.
+3. Always mention the downside FIRST.
+4. When you make a recommendation, output it in this exact format at the end:
+[REC]TICKER|NAME|ACTION|ENTRY|TARGET|STOP|PLATFORM|REASONING[/REC]
+(You can have multiple [REC] blocks)
+5. Be proactive — tell the user things they didn't ask but should know.
+6. Plain English only. No jargon without explanation.
+7. Never guarantee returns. Markets are unpredictable.
+8. If nothing looks good, say so and recommend holding cash.
+9. Factor in €1 Nordnet fee and 0.15% T212 FX fee when sizing positions.
+
+PERSONALITY: Sharp, honest, direct. You protect the user's capital first, grow it second. You think ahead of the user, not just respond. When uncertain, say so clearly.`;
+
+// ── STORAGE ──────────────────────────────────────────────────────────
+async function saveState() {
+  try {
+    await window.storage.set('sentinel-portfolio', JSON.stringify(portfolio));
+    await window.storage.set('sentinel-reclog', JSON.stringify(recLog));
+  } catch(e) {}
+}
+
+async function loadState() {
+  try {
+    const p = await window.storage.get('sentinel-portfolio');
+    if (p) portfolio = JSON.parse(p.value);
+    const r = await window.storage.get('sentinel-reclog');
+    if (r) recLog = JSON.parse(r.value);
+    renderPortfolio();
+    renderLog();
+  } catch(e) {}
+}
+
+// ── PORTFOLIO ──────────────────────────────────────────────────────────
+function addPosition() {
+  const ticker = document.getElementById('p-ticker').value.toUpperCase().trim();
+  const shares = parseFloat(document.getElementById('p-shares').value);
+  const price = parseFloat(document.getElementById('p-price').value);
+  const name = document.getElementById('p-name').value.trim() || ticker;
+  const platform = document.getElementById('p-platform').value;
+  if (!ticker || !shares || !price) return;
+  const cost = shares * price;
+  if (cost > portfolio.cash) {
+    appendMsg('agent', `⚠️ Not enough cash. You have <strong>€${portfolio.cash.toFixed(2)}</strong>, this costs <strong>€${cost.toFixed(2)}</strong>.`);
+    return;
+  }
+  portfolio.cash -= cost;
+  if (portfolio.holdings[ticker]) {
+    const h = portfolio.holdings[ticker];
+    const total = h.shares + shares;
+    h.avgPrice = (h.shares * h.avgPrice + cost) / total;
+    h.shares = total;
+  } else {
+    portfolio.holdings[ticker] = { name, shares, avgPrice: price, platform };
+  }
+  ['p-ticker','p-name','p-shares','p-price'].forEach(id => document.getElementById(id).value = '');
+  renderPortfolio();
+  saveState();
+  appendMsg('agent', `✅ Added <strong>${shares} × ${ticker}</strong> @ €${price.toFixed(2)} on <strong>${platform}</strong>. Cash remaining: <strong>€${portfolio.cash.toFixed(2)}</strong>`);
+}
+
+function renderPortfolio() {
+  const invested = Object.values(portfolio.holdings).reduce((s,h) => s + h.shares * h.avgPrice, 0);
+  const total = portfolio.cash + invested;
+  const pnl = total - portfolio.startingBudget;
+  const lossRemaining = 60 - Math.max(0, -pnl);
+
+  document.getElementById('port-total').textContent = '€' + total.toFixed(2);
+  document.getElementById('port-invested').textContent = '€' + invested.toFixed(2);
+  document.getElementById('port-cash').textContent = '€' + portfolio.cash.toFixed(2);
+  const pnlEl = document.getElementById('port-pnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + '€' + pnl.toFixed(2);
+  pnlEl.className = pnl > 0 ? 'pos' : pnl < 0 ? 'neg' : 'neu';
+
+  // Hard stop warning
+  const lossRatio = Math.max(0, -pnl) / 60;
+  document.getElementById('risk-fill').style.width = Math.min(100, lossRatio * 100) + '%';
+  const hs = document.getElementById('health-score');
+  if (lossRatio >= 1) {
+    hs.textContent = '🔴 HARD STOP — CASH OUT';
+    hs.style.color = 'var(--red)';
+  } else if (lossRatio > 0.6) {
+    hs.textContent = '🟡 CAUTION — €' + lossRemaining.toFixed(0) + ' LEFT';
+    hs.style.color = 'var(--gold)';
+  } else if (Object.keys(portfolio.holdings).length > 0) {
+    hs.textContent = '🟢 ACTIVE — €' + lossRemaining.toFixed(0) + ' BUFFER';
+    hs.style.color = 'var(--green)';
+  } else {
+    hs.textContent = '— AWAITING DATA';
+    hs.style.color = 'var(--muted)';
+  }
+
+  // Holdings list
+  const list = document.getElementById('holdings-list');
+  if (!Object.keys(portfolio.holdings).length) {
+    list.innerHTML = '<div class="no-log" style="padding:16px 14px;font-style:normal;">No positions yet.<br/>Ask the agent or add below.</div>';
+    return;
+  }
+  list.innerHTML = Object.entries(portfolio.holdings).map(([t, h]) => {
+    const val = h.shares * h.avgPrice;
+    const pct = (val / total * 100).toFixed(1);
+    return `<div class="holding" onclick="askAbout('${t}')">
+      <div class="h-ticker">${t}</div>
+      <div class="h-info">
+        <div class="h-name">${h.name}</div>
+        <div class="h-shares">${h.shares.toFixed(3)} sh · ${pct}% · ${h.platform}</div>
+      </div>
+      <div class="h-pnl neu">€${val.toFixed(0)}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── RECOMMENDATION LOG ──────────────────────────────────────────────
+function parseRecs(text) {
+  const recs = [];
+  const re = /\[REC\](.*?)\[\/REC\]/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const parts = m[1].split('|');
+    if (parts.length >= 8) {
+      recs.push({
+        ticker: parts[0].trim(),
+        name: parts[1].trim(),
+        action: parts[2].trim().toUpperCase(),
+        entry: parts[3].trim(),
+        target: parts[4].trim(),
+        stop: parts[5].trim(),
+        platform: parts[6].trim(),
+        reasoning: parts[7].trim(),
+        date: new Date().toLocaleDateString('fi-FI'),
+        status: 'Pending'
+      });
+    }
+  }
+  return recs;
+}
+
+function addToLog(recs) {
+  recs.forEach(r => recLog.unshift(r));
+  renderLog();
+  saveState();
+}
+
+function renderLog() {
+  const list = document.getElementById('log-list');
+  if (!recLog.length) {
+    list.innerHTML = '<div class="no-log">No recommendations yet.<br/>Run a scan or ask for a portfolio build.</div>';
+    return;
+  }
+  const actionClass = a => a === 'BUY' ? 'sig-buy' : a === 'SELL' ? 'sig-sell' : a === 'HOLD' ? 'sig-hold' : 'sig-watch';
+  const statusClass = s => s === 'Active' ? 'st-active' : s === 'Hit Target' ? 'st-target' : s === 'Stop Triggered' ? 'st-stop' : s === 'Manually Closed' ? 'st-closed' : 'st-pending';
+  list.innerHTML = recLog.map((r,i) => `
+    <div class="log-item" onclick="updateLogStatus(${i})">
+      <div class="log-top">
+        <div class="log-ticker">${r.ticker}</div>
+        <div class="log-date">${r.date}</div>
+      </div>
+      <div class="log-row">
+        <span class="log-action sig-tag ${actionClass(r.action)}">${r.action}</span>
+        <span class="log-prices">${r.entry} → ${r.target} · SL ${r.stop}</span>
+        <span class="log-status ${statusClass(r.status)}">${r.status}</span>
+      </div>
+      <div style="font-size:0.62rem;color:var(--sub);margin-top:3px;font-family:var(--mono);">${r.platform}</div>
+    </div>`).join('');
+}
+
+function updateLogStatus(i) {
+  const statuses = ['Pending','Active','Hit Target','Stop Triggered','Manually Closed'];
+  const cur = statuses.indexOf(recLog[i].status);
+  recLog[i].status = statuses[(cur + 1) % statuses.length];
+  renderLog();
+  saveState();
+}
+
+// ── CHAT ──────────────────────────────────────────────────────────────
+function appendMsg(role, html) {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  div.innerHTML = `
+    <div class="avatar avatar-${role === 'user' ? 'user' : 'ai'}">${role === 'user' ? 'YOU' : 'AI'}</div>
+    <div class="bubble">${html}</div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showThinking() {
+  const msgs = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg agent';
+  div.id = 'thinking';
+  div.innerHTML = `<div class="avatar avatar-ai">AI</div><div class="bubble"><div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>`;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function removeThinking() {
+  const el = document.getElementById('thinking');
+  if (el) el.remove();
+}
+
+function recCardHtml(r) {
+  const ac = r.action === 'BUY' ? 'sig-buy' : r.action === 'SELL' ? 'sig-sell' : r.action === 'HOLD' ? 'sig-hold' : 'sig-watch';
+  return `<div class="signal-card">
+    <div class="signal-header">
+      <div class="signal-ticker">${r.ticker}</div>
+      <div class="signal-name">${r.name} · ${r.platform}</div>
+      <span class="sig-tag ${ac}">${r.action}</span>
+    </div>
+    <div class="signal-body">${r.reasoning}</div>
+    <div class="signal-metrics">
+      <div class="metric"><div class="metric-label">Entry</div><div class="metric-val">${r.entry}</div></div>
+      <div class="metric"><div class="metric-label">Target</div><div class="metric-val">${r.target}</div></div>
+      <div class="metric"><div class="metric-label">Stop</div><div class="metric-val">${r.stop}</div></div>
+    </div>
+    <div class="signal-actions">
+      <button class="sig-action buy" onclick="logAction('${r.ticker}','BUY')">▲ Mark Bought</button>
+      <button class="sig-action" onclick="logAction('${r.ticker}','HOLD')">◆ Watching</button>
+      <button class="sig-action sell" onclick="logAction('${r.ticker}','SELL')">▼ Mark Sold</button>
+    </div>
+  </div>`;
+}
+
+function logAction(ticker, action) {
+  const idx = recLog.findIndex(r => r.ticker === ticker);
+  if (idx >= 0) {
+    recLog[idx].status = action === 'BUY' ? 'Active' : action === 'SELL' ? 'Manually Closed' : 'Active';
+    renderLog();
+    saveState();
+  }
+  appendMsg('agent', `Logged: <strong>${action}</strong> on <strong>${ticker}</strong>. Status updated in log. ✓`);
+}
+
+async function sendMessage(override) {
+  const input = document.getElementById('user-input');
+  const text = override || input.value.trim();
+  if (!text) return;
+  input.value = '';
+  autoResize(input);
+  document.getElementById('send-btn').disabled = true;
+
+  appendMsg('user', escHtml(text));
+  showThinking();
+
+  const portCtx = `Current portfolio: Cash €${portfolio.cash.toFixed(2)}, Holdings: ${JSON.stringify(portfolio.holdings)}, P&L: €${(portfolio.cash + Object.values(portfolio.holdings).reduce((s,h)=>s+h.shares*h.avgPrice,0) - portfolio.startingBudget).toFixed(2)}`;
+
+  chatHistory.push({ role: 'user', content: text + '\n\n[PORTFOLIO: ' + portCtx + ']' });
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: chatHistory
+      })
+    });
+    const data = await res.json();
+    const fullText = data.content.map(b => b.type === 'text' ? b.text : '').filter(Boolean).join('\n');
+    chatHistory.push({ role: 'assistant', content: data.content });
+
+    removeThinking();
+
+    const recs = parseRecs(fullText);
+    const clean = fullText.replace(/\[REC\].*?\[\/REC\]/gs, '').trim();
+    let html = mdToHtml(clean);
+    if (recs.length) {
+      html += recs.map(recCardHtml).join('');
+      addToLog(recs);
+    }
+    appendMsg('agent', html);
+  } catch(e) {
+    removeThinking();
+    appendMsg('agent', `⚠️ Error: ${e.message}`);
+  }
+  document.getElementById('send-btn').disabled = false;
+}
+
+function quick(text) { sendMessage(text); }
+function askAbout(ticker) { sendMessage(`Search live data for ${ticker} right now and give me a fresh buy/sell/hold signal with entry zone, target, and stop-loss. Which platform should I use?`); }
+
+function mdToHtml(t) {
+  return t
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em style="color:var(--gold)">$1</em>')
+    .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^## (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>\n?)+/g, s => `<ul>${s}</ul>`)
+    .replace(/\n\n/g, '<br/><br/>')
+    .replace(/\n/g, '<br/>');
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+// Init
+loadState();
+</script>
+</body>
+</html>

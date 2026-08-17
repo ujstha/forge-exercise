@@ -27,7 +27,9 @@ export default function Auth() {
     }
 
     if (mode === 'signup') {
-      setInfo('Account created. Check your email to confirm, then log in.')
+      setInfo(
+        "If this is a new email, check your inbox for a confirmation link. Already have an account? Just log in — no email needed.",
+      )
     }
   }
 
@@ -35,7 +37,7 @@ export default function Auth() {
     <div className="min-h-screen bg-base flex flex-col justify-center px-6">
       <div className="mx-auto w-full max-w-sm">
         <div className="mb-10 text-center">
-          <h1 className="text-3xl font-black tracking-tight text-white">
+          <h1 className="font-display text-5xl tracking-wide text-white">
             FORGE
           </h1>
           <p className="mt-1 text-sm text-white/50">Training OS</p>

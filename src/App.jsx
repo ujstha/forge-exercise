@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AuthProvider, useAuth } from './hooks/useAuth'
 import Nav from './components/Nav'
 import Auth from './pages/Auth'
@@ -12,6 +13,14 @@ import Programmes from './pages/Admin/Programmes'
 import Supplements from './pages/Admin/Supplements'
 import Reminders from './pages/Admin/Reminders'
 import Targets from './pages/Admin/Targets'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
 
 function AppShell() {
   const { user, loading } = useAuth()
@@ -30,6 +39,7 @@ function AppShell() {
 
   return (
     <div className="min-h-screen bg-base">
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/nutrition" element={<Nutrition />} />

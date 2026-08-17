@@ -22,6 +22,20 @@ function greeting() {
   return 'Good evening'
 }
 
+function computeStreak(logDates) {
+  const dates = new Set(logDates)
+  const today = todayISO()
+  let cursor = new Date(`${today}T00:00:00`)
+  if (!dates.has(today)) cursor.setDate(cursor.getDate() - 1)
+
+  let streak = 0
+  while (dates.has(cursor.toISOString().slice(0, 10))) {
+    streak += 1
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  return streak
+}
+
 export default function Dashboard() {
   const { user } = useAuth()
   const today = todayISO()
@@ -33,6 +47,8 @@ export default function Dashboard() {
   const [takenIds, setTakenIds] = useState(new Set())
   const [session, setSession] = useState(null)
   const [weekData, setWeekData] = useState([])
+  const [streak, setStreak] = useState(0)
+  const [weightStat, setWeightStat] = useState(null)
 
   const loadDashboard = useCallback(async () => {
     if (!user) return
@@ -98,6 +114,32 @@ export default function Dashboard() {
       })),
     )
 
+    const sixtyDaysAgo = new Date()
+    sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60)
+    const [recentWorkoutDates, recentWeights] = await Promise.all([
+      supabase
+        .from('workout_logs')
+        .select('log_date')
+        .eq('user_id', user.id)
+        .gte('log_date', sixtyDaysAgo.toISOString().slice(0, 10)),
+      supabase
+        .from('body_logs')
+        .select('weight_kg, log_date')
+        .eq('user_id', user.id)
+        .not('weight_kg', 'is', null)
+        .order('log_date', { ascending: false })
+        .limit(2),
+    ])
+
+    setStreak(computeStreak((recentWorkoutDates.data ?? []).map((r) => r.log_date)))
+
+    const [latest, previous] = recentWeights.data ?? []
+    setWeightStat(
+      latest
+        ? { kg: latest.weight_kg, delta: previous ? latest.weight_kg - previous.weight_kg : null }
+        : null,
+    )
+
     // Today's session: next session in rotation for the first preloaded programme
     const { data: programme } = await supabase
       .from('programmes')
@@ -161,54 +203,38 @@ export default function Dashboard() {
   }
 
   const targetKcal = dayType && profile ? profile[TARGET_KCAL_FIELD[dayType]] : null
+  const weekSessionsCount = weekData.filter((d) => d.completed).length
+  const takenCount = takenIds.size
 
   return (
     <div className="p-4 pb-24">
-      <h1 className="text-2xl font-bold text-white">
+      <h1 className="font-display text-4xl tracking-wide text-white">
         {greeting()}{profile?.name ? `, ${profile.name}` : ''}
       </h1>
 
-      <div className="mt-4 flex gap-2 overflow-x-auto">
-        {DAY_TYPES.map(({ value, label }) => (
-          <button
-            key={value}
-            onClick={() => setDayTypeForToday(value)}
-            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
-              dayType === value ? 'bg-accent text-black' : 'bg-surface text-white/60'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        <StatTile value={streak} label="Day streak" sub="active training" />
+        <StatTile
+          value={weightStat ? weightStat.kg : '—'}
+          unit={weightStat ? 'kg' : ''}
+          label="Weight"
+          sub={
+            weightStat?.delta != null
+              ? `${weightStat.delta > 0 ? '↑' : weightStat.delta < 0 ? '↓' : '·'} ${Math.abs(weightStat.delta).toFixed(1)}kg`
+              : 'no history yet'
+          }
+        />
+        <StatTile value={weekSessionsCount} label="Sessions" sub="this week" />
       </div>
-
-      {dayType && targetKcal != null && (
-        <div className="mt-6 flex items-center justify-around rounded-2xl bg-surface p-6">
-          <MacroRing consumed={totals.kcal} target={targetKcal} label="kcal" />
-          <div className="space-y-3">
-            <MacroStat label="Protein" consumed={totals.protein_g} target={profile.target_protein_g} />
-            <MacroStat label="Carbs" consumed={totals.carbs_g} target={profile.target_carbs_g} />
-            <MacroStat label="Fat" consumed={totals.fat_g} target={profile.target_fat_g} />
-          </div>
-        </div>
-      )}
-
-      {session && (
-        <Link
-          to="/workout"
-          className="mt-6 flex items-center justify-between rounded-2xl bg-surface p-5 transition hover:bg-surface2"
-        >
-          <div>
-            <p className="text-xs uppercase tracking-wide text-white/40">Today's session</p>
-            <p className="mt-1 text-lg font-semibold text-white">{session.session_name}</p>
-          </div>
-          <Dumbbell className="text-accent" size={28} />
-        </Link>
-      )}
 
       {supplements.length > 0 && (
         <div className="mt-6">
-          <p className="mb-2 text-xs uppercase tracking-wide text-white/40">Supplements</p>
+          <div className="mb-2 flex items-baseline justify-between">
+            <p className="text-xs uppercase tracking-wide text-white/40">Supplements</p>
+            <p className="font-mono text-xs text-white/40">
+              {takenCount}/{supplements.length} taken
+            </p>
+          </div>
           <div className="space-y-2">
             {supplements.map((s) => {
               const taken = takenIds.has(s.id)
@@ -236,6 +262,54 @@ export default function Dashboard() {
             })}
           </div>
         </div>
+      )}
+
+      <div className="mt-6 flex gap-2 overflow-x-auto">
+        {DAY_TYPES.map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => setDayTypeForToday(value)}
+            className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+              dayType === value ? 'bg-accent text-black' : 'bg-surface text-white/60'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {dayType && targetKcal != null && (
+        <div className="mt-6 flex items-center justify-around rounded-2xl bg-surface p-6">
+          <MacroRing consumed={totals.kcal} target={targetKcal} label="kcal" />
+          <div className="space-y-3">
+            <MacroStat
+              label="Protein"
+              consumed={totals.protein_g}
+              target={profile.target_protein_g}
+              color="protein"
+            />
+            <MacroStat
+              label="Carbs"
+              consumed={totals.carbs_g}
+              target={profile.target_carbs_g}
+              color="carbs"
+            />
+            <MacroStat label="Fat" consumed={totals.fat_g} target={profile.target_fat_g} color="fat" />
+          </div>
+        </div>
+      )}
+
+      {session && (
+        <Link
+          to="/workout"
+          className="mt-6 flex items-center justify-between rounded-2xl bg-surface p-5 transition hover:bg-surface2"
+        >
+          <div>
+            <p className="text-xs uppercase tracking-wide text-white/40">Today's session</p>
+            <p className="mt-1 text-lg font-semibold text-white">{session.session_name}</p>
+          </div>
+          <Dumbbell className="text-accent" size={28} />
+        </Link>
       )}
 
       {weekData.length > 0 && (
@@ -266,23 +340,45 @@ export default function Dashboard() {
   )
 }
 
-function MacroStat({ label, consumed, target }) {
+const MACRO_COLORS = {
+  protein: { text: 'text-protein', bg: 'bg-protein', pill: 'bg-protein/10 text-protein' },
+  carbs: { text: 'text-carbs', bg: 'bg-carbs', pill: 'bg-carbs/10 text-carbs' },
+  fat: { text: 'text-fat', bg: 'bg-fat', pill: 'bg-fat/10 text-fat' },
+}
+
+function MacroStat({ label, consumed, target, color }) {
   const remaining = Math.max((target ?? 0) - consumed, 0)
   const pct = target ? Math.min((consumed / target) * 100, 100) : 0
   const over = consumed > (target ?? 0)
+  const c = MACRO_COLORS[color]
 
   return (
     <div className="w-32">
-      <div className="flex justify-between text-xs">
-        <span className="text-white/50">{label}</span>
-        <span className={over ? 'text-red-400' : 'text-white/70'}>{Math.round(remaining)}g</span>
+      <div className="flex items-center justify-between text-xs">
+        <span className={`rounded px-1.5 py-0.5 font-medium ${c.pill}`}>{label}</span>
+        <span className={over ? 'text-red-400' : 'font-mono text-white/70'}>
+          {Math.round(remaining)}g
+        </span>
       </div>
       <div className="mt-1 h-1.5 w-full rounded-full bg-white/10">
         <div
-          className={`h-1.5 rounded-full ${over ? 'bg-red-400' : 'bg-accent'}`}
+          className={`h-1.5 rounded-full ${over ? 'bg-red-400' : c.bg}`}
           style={{ width: `${pct}%` }}
         />
       </div>
+    </div>
+  )
+}
+
+function StatTile({ value, unit = '', label, sub }) {
+  return (
+    <div className="rounded-2xl bg-surface p-3 text-center">
+      <p className="font-display text-3xl leading-none text-accent">
+        {value}
+        {unit && <span className="text-lg text-white/50">{unit}</span>}
+      </p>
+      <p className="mt-1.5 text-[11px] text-white/50">{label}</p>
+      <p className="font-mono text-[10px] text-white/30">{sub}</p>
     </div>
   )
 }

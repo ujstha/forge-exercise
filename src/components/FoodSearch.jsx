@@ -101,7 +101,6 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
                 className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/30"
               />
               <input
-                autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search foods…"
@@ -161,19 +160,19 @@ export default function FoodSearch({ open, mealSlot, onClose, onConfirm }) {
               {preview && (
                 <div className="mt-4 grid grid-cols-4 gap-2 rounded-lg bg-surface2 p-3 text-center">
                   <div>
-                    <p className="text-sm font-semibold text-white">{preview.kcal}</p>
+                    <p className="font-mono text-sm font-semibold text-accent">{preview.kcal}</p>
                     <p className="text-[10px] uppercase text-white/40">kcal</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{preview.protein_g}g</p>
+                    <p className="font-mono text-sm font-semibold text-protein">{preview.protein_g}g</p>
                     <p className="text-[10px] uppercase text-white/40">protein</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{preview.carbs_g}g</p>
+                    <p className="font-mono text-sm font-semibold text-carbs">{preview.carbs_g}g</p>
                     <p className="text-[10px] uppercase text-white/40">carbs</p>
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-white">{preview.fat_g}g</p>
+                    <p className="font-mono text-sm font-semibold text-fat">{preview.fat_g}g</p>
                     <p className="text-[10px] uppercase text-white/40">fat</p>
                   </div>
                 </div>

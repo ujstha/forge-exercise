@@ -8,6 +8,13 @@ export default {
         surface: '#151515',
         surface2: '#1e1e1e',
         accent: '#c8f135',
+        protein: '#4488ff',
+        carbs: '#c8f135',
+        fat: '#ff8833',
+      },
+      fontFamily: {
+        display: ['"Bebas Neue"', 'sans-serif'],
+        mono: ['"DM Mono"', 'monospace'],
       },
     },
   },

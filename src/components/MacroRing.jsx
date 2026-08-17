@@ -32,7 +32,7 @@ export default function MacroRing({ consumed, target, label = 'kcal' }) {
         />
       </svg>
       <div className="absolute flex flex-col items-center">
-        <span className="text-2xl font-bold text-white">{Math.round(remaining)}</span>
+        <span className="font-display text-4xl text-white">{Math.round(remaining)}</span>
         <span className="text-xs uppercase tracking-wide text-white/40">
           {label} left
         </span>
