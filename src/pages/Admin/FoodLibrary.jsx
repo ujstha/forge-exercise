@@ -3,6 +3,7 @@ import { ArrowLeft, Plus, Pencil, Trash2, X, Lock } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import { MEAL_SLOTS } from '../../lib/constants'
 
 const EMPTY_FORM = {
   name: '',
@@ -13,6 +14,8 @@ const EMPTY_FORM = {
   kcal_per_100g: '',
   serving_size_g: '',
   serving_name: '',
+  usual_meal_slot: '',
+  usual_grams: '',
 }
 
 export default function FoodLibrary() {
@@ -41,6 +44,8 @@ export default function FoodLibrary() {
       kcal_per_100g: Number(form.kcal_per_100g) || 0,
       serving_size_g: form.serving_size_g === '' ? null : Number(form.serving_size_g),
       serving_name: form.serving_name.trim() || null,
+      usual_meal_slot: form.usual_meal_slot || null,
+      usual_grams: form.usual_grams === '' ? null : Number(form.usual_grams),
     }
 
     if (form.id) {
@@ -170,6 +175,27 @@ function FoodFormModal({ initial, onClose, onSave }) {
           <div className="grid grid-cols-2 gap-3">
             {field('serving_size_g', 'Serving size (g)', { type: 'number' })}
             {field('serving_name', 'Serving name')}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-white/50">
+                Quick-tick meal slot
+              </label>
+              <select
+                value={form.usual_meal_slot}
+                onChange={(e) => setForm((f) => ({ ...f, usual_meal_slot: e.target.value }))}
+                className="w-full rounded-lg border border-white/10 bg-surface2 px-3 py-2.5 text-white outline-none focus:border-accent"
+              >
+                <option value="">None</option>
+                {MEAL_SLOTS.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {slot}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {field('usual_grams', 'Usual grams', { type: 'number' })}
           </div>
         </div>
 

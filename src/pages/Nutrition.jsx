@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ChevronLeft, ChevronRight, Plus, X, Trash2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, X, Trash2, Check } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../hooks/useAuth'
 import { useFoodLog } from '../hooks/useFoodLog'
@@ -10,6 +10,16 @@ import { TARGET_KCAL_FIELD, MEAL_SLOTS } from '../lib/constants'
 function formatDisplayDate(dateISO) {
   const d = new Date(`${dateISO}T00:00:00`)
   return d.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function macrosForGrams(food, grams) {
+  const factor = grams / 100
+  return {
+    protein_g: Math.round(food.protein_per_100g * factor * 10) / 10,
+    carbs_g: Math.round(food.carbs_per_100g * factor * 10) / 10,
+    fat_g: Math.round(food.fat_per_100g * factor * 10) / 10,
+    kcal: Math.round(food.kcal_per_100g * factor),
+  }
 }
 
 export default function Nutrition() {
@@ -23,11 +33,13 @@ export default function Nutrition() {
   const [addingSlot, setAddingSlot] = useState(null)
   const [editingLog, setEditingLog] = useState(null)
   const [editError, setEditError] = useState(null)
+  const [usualFoods, setUsualFoods] = useState([])
+  const [quickGrams, setQuickGrams] = useState({})
 
   useEffect(() => {
     if (!user) return
     ;(async () => {
-      const [profileRes, dayTypeRes] = await Promise.all([
+      const [profileRes, dayTypeRes, usualFoodsRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase
           .from('day_type_logs')
@@ -35,9 +47,15 @@ export default function Nutrition() {
           .eq('user_id', user.id)
           .eq('log_date', date)
           .maybeSingle(),
+        supabase
+          .from('foods')
+          .select('*')
+          .not('usual_meal_slot', 'is', null)
+          .or(`user_id.is.null,user_id.eq.${user.id}`),
       ])
       if (profileRes.data) setProfile(profileRes.data)
       setDayType(dayTypeRes.data?.day_type ?? null)
+      setUsualFoods(usualFoodsRes.data ?? [])
     })()
   }, [user, date])
 
@@ -67,9 +85,34 @@ export default function Nutrition() {
     return acc
   }, {})
 
+  const quickFoodsBySlot = MEAL_SLOTS.reduce((acc, slot) => {
+    const loggedFoodIds = new Set(logsBySlot[slot].map((l) => l.food_id))
+    acc[slot] = usualFoods.filter(
+      (f) => f.usual_meal_slot === slot && !loggedFoodIds.has(f.id),
+    )
+    return acc
+  }, {})
+
   const handleAddFood = async (entry) => {
     await addLog(entry)
     setAddingSlot(null)
+  }
+
+  const handleQuickLog = async (food, slot) => {
+    const grams = Number(quickGrams[food.id] ?? food.usual_grams) || 0
+    if (grams <= 0) return
+    await addLog({
+      food_id: food.id,
+      food_name: food.name,
+      meal_slot: slot,
+      grams,
+      ...macrosForGrams(food, grams),
+    })
+    setQuickGrams((g) => {
+      const next = { ...g }
+      delete next[food.id]
+      return next
+    })
   }
 
   const handleSaveEdit = async (grams) => {
@@ -181,6 +224,35 @@ export default function Nutrition() {
                       </div>
                       <p className="text-xs text-white/50">{Math.round(log.kcal)} kcal</p>
                     </button>
+                  ))}
+                </div>
+              )}
+
+              {quickFoodsBySlot[slot].length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {quickFoodsBySlot[slot].map((food) => (
+                    <div
+                      key={food.id}
+                      className="flex items-center gap-2 rounded-lg border border-dashed border-white/15 px-3 py-2"
+                    >
+                      <p className="flex-1 truncate text-sm text-white/70">{food.name}</p>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        min="0"
+                        value={quickGrams[food.id] ?? food.usual_grams}
+                        onChange={(e) =>
+                          setQuickGrams((g) => ({ ...g, [food.id]: e.target.value }))
+                        }
+                        className="w-16 rounded border border-white/10 bg-surface2 px-2 py-1 text-center text-sm text-white outline-none focus:border-accent"
+                      />
+                      <button
+                        onClick={() => handleQuickLog(food, slot)}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-accent/50 text-accent"
+                      >
+                        <Check size={14} />
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}

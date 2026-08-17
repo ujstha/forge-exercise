@@ -16,7 +16,7 @@ export default function Auth() {
     setInfo(null)
     setLoading(true)
 
-    const { error } =
+    const { data, error } =
       mode === 'login' ? await signIn(email, password) : await signUp(email, password)
 
     setLoading(false)
@@ -27,8 +27,11 @@ export default function Auth() {
     }
 
     if (mode === 'signup') {
+      const alreadyRegistered = data?.user?.identities?.length === 0
       setInfo(
-        "If this is a new email, check your inbox for a confirmation link. Already have an account? Just log in — no email needed.",
+        alreadyRegistered
+          ? 'This email is already registered. Log in instead.'
+          : 'Account created. Check your email to confirm, then log in.',
       )
     }
   }
